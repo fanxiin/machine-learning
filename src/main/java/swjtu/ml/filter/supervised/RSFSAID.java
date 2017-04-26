@@ -34,25 +34,28 @@ public class RSFSAID implements FSAlgorithm {
     /**
      * 领域集合
      */
-    private ArrayList<HashSet<Integer>> neighborSets;
+    private int[][] neighborSets;
 
     /**
-     * 领域集合对应的泛化决策
+     * 领域集合对应的泛化决策;
+     * -1: 正负类都可能;
+     * 其他对应正负类索引
      */
-    private ArrayList<HashSet<Double>> generalDecision;
+    private int[] generalDecision;
+
+    /** 索引对应的对象的类标（按weka内部的方式将double转为int） */
+    private int[] instanceClass;
+
+    /** 正负类对象个数 */
+    private int[] classCount;
 
     /**
-     * 正负类实例集合
-     */
-    private ArrayList<HashSet<Integer>> classSet;
-
-    /**
-     * 正类对应的统计的索引
+     * 正类对应的统计的索引（正类标值）
      */
     private int posIndex;
 
     /**
-     * 负类对应的统计的索引
+     * 负类对应的统计的索引（负类标值）
      */
     private int negIndex;
 
@@ -91,61 +94,50 @@ public class RSFSAID implements FSAlgorithm {
      */
     private void findNeighborhoodSets() throws Exception {
         int dataCount = m_data.numInstances();
-        int[] flag = new int[dataCount];
-        neighborSets = new ArrayList<HashSet<Integer>>();
+        neighborSets = new int[dataCount][dataCount];
         for (int i = 0; i < dataCount; i++) {
-            if (flag[i] == 0) {
-                HashSet<Integer> n_set = new HashSet<Integer>();
-                for (int j = i; j < dataCount; j++) {
-                    double m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                            m_data.get(j)) / numNumrice;
-                    if (flag[j] == 0 && m_distance <= delta) {
-                        n_set.add(j);
-                        flag[j] = 1;
-                    }
+            for (int j = i; j < dataCount; j++) {
+                double m_distance = m_EuclideanDistance.distance(m_data.get(i),
+                        m_data.get(j)) / numNumrice;
+                if (m_distance <= delta) {
+                    neighborSets[i][j] = 1;
+                    neighborSets[j][i] = 1;
                 }
-                neighborSets.add(n_set);
             }
-        }
-
-        if (neighborSets.size() < 2) {
-            throw new FSException("参数dela取值不当！ " + "\ndelat:" + delta + ", alpha:" + alpha + ", beta:" + beta);
         }
 
         /** 计算领域对应的泛化决策 */
-        generalDecision = new ArrayList<HashSet<Double>>();
+        generalDecision = new int[dataCount];
 
-        for (HashSet<Integer> n_set : neighborSets) {
-            HashSet<Double> gd = new HashSet<Double>();
-            for (int instanceIndex : n_set) {
-                //如果已经加入了所有class类，跳出循环
-                if (gd.size() == 2)
-                    break;
-                gd.add(m_data.get(instanceIndex).classValue());
+        for (int i = 0; i < neighborSets.length; i++) {
+            double oneClass = m_data.get(i).classValue();
+            for (int j = 1; j < neighborSets.length; j++) {
+                /** 确保j属于的领域 */
+                if (neighborSets[i][j] == 1) {
+                    /** 此领域内已发现同时包含正负类，泛化决策取值-1表示泛化决策为正负类 */
+                    if (oneClass != m_data.get(j).classValue()) {
+                        generalDecision[i] = -1;
+                        break;
+                    }
+                    generalDecision[i] = (int) oneClass;
+                }
             }
-            generalDecision.add(gd);
         }
+
     }
 
 
-    private ArrayList<HashSet<Integer>> findNeighborhoodSetsByAttr(int attrIndex) throws Exception {
+    private int[][] findNeighborhoodSetsByAttr(int attrIndex) throws Exception {
         int dataCount = m_data.numInstances();
-        //m_EuclideanDistance.setOptions(weka.core.Utils.splitOptions("-R "+attrIndex));
-
-        int[] flag = new int[dataCount];
-        ArrayList<HashSet<Integer>> neighborSetsByAttr = new ArrayList<HashSet<Integer>>();
+        int[][] neighborSetsByAttr = new int[dataCount][dataCount];
         for (int i = 0; i < dataCount; i++) {
-            if (flag[i] == 0) {
-                HashSet<Integer> n_set = new HashSet<Integer>();
-                for (int j = i; j < dataCount; j++) {
-                    double m_distance = m_EuclideanDistance.distanceOnAttr(attrIndex, m_data.get(i),
-                            m_data.get(j));
-                    if (flag[j] == 0 && m_distance <= delta) {
-                        n_set.add(j);
-                        flag[j] = 1;
-                    }
+            for (int j = i; j < dataCount; j++) {
+                double m_distance = m_EuclideanDistance.distanceOnAttr(attrIndex, m_data.get(i),
+                        m_data.get(j));
+                if (m_distance <= delta) {
+                    neighborSetsByAttr[i][j] = 1;
+                    neighborSetsByAttr[j][i] = 1;
                 }
-                neighborSetsByAttr.add(n_set);
             }
         }
         return neighborSetsByAttr;
@@ -160,10 +152,10 @@ public class RSFSAID implements FSAlgorithm {
      */
     private double computeSignificance(int attrIndex) throws Exception {
         /** 按属性列获得领域集合 */
-        ArrayList<HashSet<Integer>> m_neighborSets = findNeighborhoodSetsByAttr(attrIndex);
+        int[][] m_neighborSets = findNeighborhoodSetsByAttr(attrIndex);
 
-        int nPos = classSet.get(posIndex).size();
-        int nNeg = classSet.get(negIndex).size();
+        int nPos = classCount[posIndex];
+        int nNeg = classCount[negIndex];
 
         /** 可能的错正类（按领域内正负数据多数分）
          *  错分的上边界对象数
@@ -174,23 +166,25 @@ public class RSFSAID implements FSAlgorithm {
          *  下边界元素数大于上边界元素数的领域的所有上边界元素的个数和 */
         int FN = 0;
 
-        for (HashSet<Integer> ns : m_neighborSets) {
-            /** 第一个为实际正类数，第二个位实际负类数 */
+        for (int i = 0; i < m_neighborSets.length; i++) {
+            /** 第一个为实际正类数，第二个位实际负类数 *//** 对应正负类索引 */
             int[] posAndNeg = new int[2];
-            for (int instanceIndex : ns) {
-                if (classSet.get(posIndex).contains(instanceIndex))
-                    posAndNeg[0]++;
-                else
-                    posAndNeg[1]++;
+            for (int j = 0; j < m_neighborSets.length; j++) {
+                if (m_neighborSets[i][j] == 1) {
+                    if (instanceClass[j] == posIndex)
+                        posAndNeg[posIndex]++;
+                    else
+                        posAndNeg[negIndex]++;
+                }
             }
             /**************** 如果该领域内正负类个数相等？ *******************/
             /** 下边界大于上边界，故给单个对象分类时将其分入正类，则领域中实际为负类的对象分错
              *  即错正类 */
-            if (posAndNeg[0] > posAndNeg[1])
-                FP += posAndNeg[1];
+            if (posAndNeg[posIndex] >= posAndNeg[negIndex] && instanceClass[i] == negIndex)
+                FP++;
             /** 上边界大于下边界 */
-            if (posAndNeg[1] > posAndNeg[0])
-                FN += posAndNeg[0];
+            if (posAndNeg[negIndex] >= posAndNeg[posIndex] && instanceClass[i] == posIndex)
+                FN++;
         }
 
         return 1 - (alpha * FP / nPos + beta * FN / nNeg) / 2;
@@ -205,20 +199,17 @@ public class RSFSAID implements FSAlgorithm {
     private void computeClassSet() throws Exception {
         if (m_data.get(0).numClasses() != 2)
             throw new Exception("不是二分类数据！");
-
-        classSet = new ArrayList<HashSet<Integer>>();
-
-        classSet.add(new HashSet<Integer>());
-        classSet.add(new HashSet<Integer>());
-
+        classCount = new int[2];
+        instanceClass = new int[m_data.numInstances()];
         for (int i = 0; i < m_data.numInstances(); i++) {
-            double d = m_data.get(i).classValue();
-            classSet.get((int) m_data.get(i).classValue()).add(i);
+            int classVlaue = (int) m_data.get(i).classValue();
+            instanceClass[i] = classVlaue;
+            classCount[classVlaue]++;
         }
 
-        posIndex = classSet.get(0).size() < classSet.get(1).size() ? 0 : 1;
+        posIndex = classCount[0] < classCount[1] ? 0 : 1;
 
-        negIndex = classSet.get(0).size() > classSet.get(1).size() ? 0 : 1;
+        negIndex = classCount[0] > classCount[1] ? 0 : 1;
     }
 
     private boolean discernible(int attrIndex, int i, int j) {
@@ -273,19 +264,15 @@ public class RSFSAID implements FSAlgorithm {
 
         /** 计算可区分属性 */
         HashSet<HashSet<Integer>> discernibilityMatrix = new HashSet<HashSet<Integer>>();
-        for (int i = 0; i < neighborSets.size(); i++) {
-            for (int j = 0; j < i; j++) {
-                if (!generalDecision.get(i).equals(generalDecision.get(j))) {
-                    for (int a : neighborSets.get(i)) {
-                        for (int b : neighborSets.get(j)) {
-                            HashSet<Integer> discernibilityAttr = new HashSet<Integer>();
-                            for (int k = 0; k < m_data.numAttributes() - 1; k++) {
-                                if (discernible(k, a, b))
-                                    discernibilityAttr.add(k);
-                            }
-                            discernibilityMatrix.add(discernibilityAttr);
-                        }
+        for (int i = 0; i < m_data.numInstances(); i++) {
+            for (int j = 0; j < m_data.numInstances(); j++) {
+                if (neighborSets[i][j] == 0 && generalDecision[i] != generalDecision[j]) {
+                    HashSet<Integer> discernibilityAttr = new HashSet<Integer>();
+                    for (int k = 0; k < m_data.numAttributes() - 1; k++) {
+                        if (discernible(k, i, j))
+                            discernibilityAttr.add(k);
                     }
+                    discernibilityMatrix.add(discernibilityAttr);
                 }
             }
         }
