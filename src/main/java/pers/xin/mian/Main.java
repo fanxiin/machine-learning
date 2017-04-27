@@ -28,7 +28,7 @@ public class Main {
         e.setInterval(interval);
         Summary oSummary = e.originalAnalyze();
         System.out.println(oSummary.getROC_Area());
-        PSO pso = new PSO(10,60,1,0.00001,0.4,2,2);
+        PSO pso = new PSO(10,60,1,0.00001,1,2,2);
         pso.setObject(e);
         double[] params = pso.search();
         Summary fsSummary = e.RSFSAIDAnalyze(params);

@@ -23,7 +23,7 @@ public class PSOTest implements Optimizable{
     }
 
     public static void main(String[] args) {
-        PSO pso = new PSO(10,200,0.1,0.0001,0.5,2,2);
+        PSO pso = new PSO(10,200,0.8,0.0001,0.5,2,2);
         pso.setObject(new PSOTest());
         double[] best = pso.search();
         System.out.println(best[0]+" ,"+best[1]+", "+best[2]);
