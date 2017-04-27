@@ -10,6 +10,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Random;
 

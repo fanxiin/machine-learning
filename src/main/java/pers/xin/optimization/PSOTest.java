@@ -14,7 +14,7 @@ public class PSOTest implements Optimizable{
     }
 
     public double[][] getInterval() {
-        double[][] m_interval = {{-10000,-9999},{-11500,-11499},{-100,0}};
+        double[][] m_interval = {{0,20},{-4,20},{-10,90}};
         return m_interval;
     }
 
@@ -23,7 +23,7 @@ public class PSOTest implements Optimizable{
     }
 
     public static void main(String[] args) {
-        PSO pso = new PSO(1000,400,0.0001,0.5,2,2);
+        PSO pso = new PSO(10,200,0.1,0.0001,0.5,2,2);
         pso.setObject(new PSOTest());
         double[] best = pso.search();
         System.out.println(best[0]+" ,"+best[1]+", "+best[2]);

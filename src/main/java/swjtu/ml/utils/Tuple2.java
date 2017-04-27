@@ -19,4 +19,10 @@ public class Tuple2<E, T> {
     public T _2(){
         return t;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        Tuple2<E,T> o = (Tuple2<E,T>)obj;
+        return this.e.equals(o.e)&&this.t.equals(o.t) ? true : false;
+    }
 }
