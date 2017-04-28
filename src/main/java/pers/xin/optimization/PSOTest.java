@@ -8,9 +8,14 @@ import java.util.HashSet;
 /**
  * Created by xin on 2017/4/19.
  */
-public class PSOTest implements Optimizable{
-    public double fitness(double[] params) {
-        return 3*Math.pow(params[0]-1,2)+2*Math.pow(params[1]+3,2)+3*Math.pow(params[2]+10,2);
+public class PSOTest extends Optimizable{
+    public Fitness computeFitness(double[] params) {
+        return new BaseFitness(3*Math.pow(params[0]-1,2)+2*Math.pow(params[1]+3,2)+3*Math.pow(params[2]+10,2));
+    }
+
+    public int[] getPrecision() {
+        int[] p = {3,3,3};
+        return p;
     }
 
     public double[][] getInterval() {
@@ -23,11 +28,11 @@ public class PSOTest implements Optimizable{
     }
 
     public static void main(String[] args) {
-        PSO pso = new PSO(10,200,0.8,0.0001,0.5,2,2);
+        PSO pso = new PSO(20,40,0.8,0.0001,0.5,2,2);
         pso.setObject(new PSOTest());
         double[] best = pso.search();
         System.out.println(best[0]+" ,"+best[1]+", "+best[2]);
-        System.out.println(pso.bestFitness());
+        System.out.println(((BaseFitness)pso.bestFitness()).m_fitness);
         HashSet<Integer> hs = new HashSet<Integer>();
         hs.add(1);
         hs.add(new Integer(1));

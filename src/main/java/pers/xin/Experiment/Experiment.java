@@ -1,5 +1,7 @@
 package pers.xin.Experiment;
 
+import pers.xin.optimization.AUCFSFitness;
+import pers.xin.optimization.Fitness;
 import pers.xin.optimization.Optimizable;
 import swjtu.ml.filter.FSException;
 import swjtu.ml.filter.FeatureSelection;
@@ -10,7 +12,6 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 
-import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Random;
@@ -19,13 +20,13 @@ import java.util.Random;
 /**
  * Created by xin on 2017/4/19.
  */
-public class Experiment implements Optimizable{
+public class Experiment extends Optimizable{
     private Instances data;
     private int positiveIndex;
     private String classifierName;
-    private double[][] interval;
     private HashMap<String,Double> featuresAUC=new HashMap<String, Double>();
     private HashMap<String,Double> paramsAUCBuffer = new HashMap<String, Double>();
+    private HashMap<String,Integer> paramsFeatureCountBuffer = new HashMap<String, Integer>();
     private NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
     public Experiment(String classifierName, Instances data){
@@ -48,34 +49,20 @@ public class Experiment implements Optimizable{
      * @param params
      * @return
      */
-    public double fitness(double[] params){
-        double AUC = 0;
+    public Fitness computeFitness(double[] params){
+        //Fitness AUC = new AUCFSFitness(0,0);
 //        for (int i = 0; i < params.length; i++) {
 //            BigDecimal b = new BigDecimal(params[i]);
 //            params[i] = b.setScale(3,BigDecimal.ROUND_HALF_UP).doubleValue();
 //        }
         try {
-            AUC = RSFSAIDTest(params[0],params[1],params[2]);
-        } catch (FSException e) {
-            System.out.println(e.getMessage());
-            return 0;
+            return RSFSAIDTest(params[0],params[1],params[2]);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(e instanceof FSException) System.out.println(e.getMessage());
+            return new AUCFSFitness(0,0);
         }
-        return -AUC;
     }
 
-    /**
-     * 设置参数区间
-     * @param interval
-     */
-    public void setInterval(double[][] interval) {
-        this.interval = interval;
-    }
-
-    public double[][] getInterval() {
-        return interval;
-    }
 
     /**
      * 使用RSFSAID算法特征选择测试分类
@@ -85,13 +72,16 @@ public class Experiment implements Optimizable{
      * @return 返回AUC值
      * @throws Exception 参数不合适时抛出FSException
      */
-    public double RSFSAIDTest(double delta, double alpha, double beta) throws Exception {
-        String paramsCode = numberFormat.format(delta)+","+numberFormat.format(alpha)+","+numberFormat.format(beta);
+    public AUCFSFitness RSFSAIDTest(double delta, double alpha, double beta) throws Exception {
+//        String paramsCode = numberFormat.format(delta)+","+numberFormat.format(alpha)+","+numberFormat.format(beta);
+        String paramsCode = delta+","+alpha+","+beta;
+
         if(!paramsAUCBuffer.containsKey(paramsCode)){
             RSFSAID rsfsaid = new RSFSAID(delta,alpha,beta);
             FeatureSelection fs = new FeatureSelection(rsfsaid);
             fs.setInputFormat(data);
             String features = fs.selectFeature(data);
+            paramsFeatureCountBuffer.put(paramsCode,rsfsaid.getSelectedAttributeCount());
             if(!featuresAUC.containsKey(features)){
                 Instances fs_data = Filter.useFilter(data,fs);
                 Classifier classifier = (Classifier) Class.forName(classifierName).newInstance();
@@ -99,7 +89,9 @@ public class Experiment implements Optimizable{
             }
             paramsAUCBuffer.put(paramsCode,featuresAUC.get(features));
         }
-        return paramsAUCBuffer.get(paramsCode);
+        double AUC = paramsAUCBuffer.get(paramsCode);
+        int featureCount = paramsFeatureCountBuffer.get(paramsCode);
+        return new AUCFSFitness(AUC,featureCount);
     }
 
     /**
@@ -144,10 +136,10 @@ public class Experiment implements Optimizable{
      * @throws Exception
      */
     public Summary RSFSAIDAnalyze(double[] params) throws Exception {
-        for (int i = 0; i < params.length; i++) {
-            BigDecimal bg = new BigDecimal(params[i]);
-            params[i] = bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
-        }
+//        for (int i = 0; i < params.length; i++) {
+//            BigDecimal bg = new BigDecimal(params[i]);
+//            params[i] = bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+//        }
         RSFSAID rsfsaid = new RSFSAID(params[0],params[1],params[2]);
         FeatureSelection fs = new FeatureSelection(rsfsaid);
         fs.setInputFormat(data);
@@ -174,4 +166,5 @@ public class Experiment implements Optimizable{
         return Filter.useFilter(data,fs);
     }
 }
+
 

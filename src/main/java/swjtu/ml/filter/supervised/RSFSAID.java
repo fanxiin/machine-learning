@@ -89,6 +89,10 @@ public class RSFSAID implements FSAlgorithm {
         return s_SelectedAttributes;
     }
 
+    public int getSelectedAttributeCount(){
+        return  m_SelectedAttributes.length;
+    }
+
     /**
      * 计算领域集合,集领域对应的泛化决策
      */

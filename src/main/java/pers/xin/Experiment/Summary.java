@@ -111,9 +111,9 @@ public class Summary {
         return numAttribute;
     }
 
-    public String header() {
+    public static String header() {
         return "DataSet Name,delta,alpha,beta,Correctly Classified Instances,Correctly Classified Instances%," +
-                "Incorrectly Classified Instances,Incorrectly Classified Instances%,F-Measure,ROC Area,isReduced," +
+                "Incorrectly Classified Instances,Incorrectly Classified Instances%,F-Measure,AUC," +
                 "(Reduction) Attribute Count,Reduction";
     }
 
@@ -122,12 +122,12 @@ public class Summary {
             return dataSetName + "," + delta + "," + alpha + "," + beta + ","
                     + Correctly_Classified_Instances + "," + CCIP + "%,"
                     + Incorrectly_Classified_Instances + "," + ICIP + "%,"
-                    + F_Measure + "," + ROC_Area + ",yes," + reductionCount + "," + reduction.replaceAll(",","");
+                    + F_Measure + "," + ROC_Area + "," + reductionCount + "," + reduction.replaceAll(",","");
         } else {
             return dataSetName + "," + nullSymbol + "," + nullSymbol + "," + nullSymbol + ","
                     + Correctly_Classified_Instances + "," + CCIP + "%,"
                     + Incorrectly_Classified_Instances + "," + ICIP + "%,"
-                    + F_Measure + "," + ROC_Area + ",no," + numAttribute ;
+                    + F_Measure + "," + ROC_Area + "," + numAttribute ;
         }
     }
 }

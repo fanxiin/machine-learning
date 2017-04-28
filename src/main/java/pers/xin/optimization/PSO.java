@@ -1,6 +1,6 @@
 package pers.xin.optimization;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -21,6 +21,8 @@ public class PSO {
 
     /** 最大迭代次数 */
     private int maxIteration;
+
+    private int[] precision;
 
     /**
      * 惯性权重
@@ -50,7 +52,7 @@ public class PSO {
     /**
      * 群体最佳适应度值
      */
-    private double gBestFitness;
+    private Fitness gBestFitness;
 
     /** 优化对象，给出适应度函数 */
     private Optimizable m_object;
@@ -72,6 +74,7 @@ public class PSO {
         this.numParam = m_object.getInterval().length;
         this.m_object = m_object;
         this.intervals = m_object.getInterval();
+        this.precision= m_object.getPrecision();
         vMax = new double[intervals.length][2];
         for (int i = 0; i < vMax.length; i++) {
             vMax[i][1]= (intervals[i][1]-intervals[i][0])*velocityRatio;
@@ -89,9 +92,12 @@ public class PSO {
      * @param c1 自我认知系数
      * @param c2 社会认知系数
      */
-    public PSO(int swarmSize, int maxIteration,double velocityRatio, double threshold, double w, double c1, double c2) {
+    public PSO(int swarmSize, int maxIteration, double velocityRatio, double threshold, double w,
+               double c1, double
+            c2) {
         this.swarmSize = swarmSize;
         this.maxIteration = maxIteration;
+
         this.velocityRatio = velocityRatio;
         this.threshold = threshold;
         this.w = w;
@@ -121,7 +127,7 @@ public class PSO {
         /**
          * 粒子自身的历史最佳适应度
          */
-        protected double pBestFitness;
+        protected Fitness pBestFitness;
 
         private Random rand = new Random();
 
@@ -132,10 +138,15 @@ public class PSO {
 
             for (int i = 0; i < numParam; i++) {
                 position[i] = intervalRand(i);
+                BigDecimal bg = new BigDecimal(position[i]);
+                if(precision!=null){
+                    position[i] = bg.setScale(precision[i],BigDecimal.ROUND_HALF_UP).doubleValue();
+                }
                 velocity[i] = velocityRand(i);
                 pBestPosition[i] = position[i];
             }
-            pBestFitness = m_object.fitness(position);
+//            pBestFitness = Double.MAX_VALUE;
+            pBestFitness = m_object.computeFitness(position);
         }
 
         /**
@@ -174,8 +185,13 @@ public class PSO {
          * 更新粒子位置
          */
         private void updatePosition() {
+            updateVelocity();
             for (int i = 0; i < numParam; i++) {
                 position[i] = position[i] + velocity[i];
+                BigDecimal bg = new BigDecimal(position[i]);
+                if(precision!=null){
+                    position[i] = bg.setScale(precision[i],BigDecimal.ROUND_HALF_UP).doubleValue();
+                }
             }
             limitPosition();
 //            if(!inRange()){
@@ -186,25 +202,25 @@ public class PSO {
 //            }
         }
 
-        protected double updateFitness() {
-            double fitness = m_object.fitness(position);
-            if (fitness < pBestFitness) {
+        protected Fitness getFitness() {
+            Fitness fitness = m_object.computeFitness(position);
+            if (fitness.isBetterThan(pBestFitness)) {
                 pBestFitness = fitness;
                 pBestPosition = position.clone();
             }
             System.out.println("("+position[0]+","+position[1]+","+position[2]+")");
-            updateVelocity();
-            updatePosition();
+//            updateVelocity();
+//            updatePosition();
             return pBestFitness;
         }
 
-        protected boolean inRange() {
-            for (int i = 0; i < intervals.length; i++) {
-                if (position[i] > intervals[i][1] || position[i] < intervals[i][0])
-                    return false;
-            }
-            return true;
-        }
+//        protected boolean inRange() {
+//            for (int i = 0; i < intervals.length; i++) {
+//                if (position[i] > intervals[i][1] || position[i] < intervals[i][0])
+//                    return false;
+//            }
+//            return true;
+//        }
 
         protected void limitPosition() {
             for (int i = 0; i < intervals.length; i++) {
@@ -229,32 +245,32 @@ public class PSO {
      */
     private void initParticles() {
         m_particles = new ArrayList<Particle>();
-        gBestFitness = Double.MAX_VALUE;
+        gBestFitness = null;
         for (int i = 0; i < swarmSize; i++) {
             Particle p = new Particle();
             m_particles.add(p);
-            if (p.pBestFitness < gBestFitness) {
+            if (p.pBestFitness.isBetterThan(gBestFitness)) {
                 gBestFitness = p.pBestFitness;
                 gBestPosition = p.pBestPosition.clone();
             }
         }
     }
 
-    private double[] computeMidPoint(double[] first, double[] secend) {
-        double[] result = new double[first.length];
-        for (int i = 0; i < first.length; i++) {
-            result[i] = (first[i] + secend[i]) / 2.0;
-        }
-        return result;
-    }
-
-    private double distance(double[] first, double[] second) {
-        double distance = 0.0;
-        for (int i = 0; i < first.length; i++) {
-            distance += Math.pow(first[i] - second[i], 2);
-        }
-        return Math.sqrt(distance);
-    }
+//    private double[] computeMidPoint(double[] first, double[] secend) {
+//        double[] result = new double[first.length];
+//        for (int i = 0; i < first.length; i++) {
+//            result[i] = (first[i] + secend[i]) / 2.0;
+//        }
+//        return result;
+//    }
+//
+//    private double distance(double[] first, double[] second) {
+//        double distance = 0.0;
+//        for (int i = 0; i < first.length; i++) {
+//            distance += Math.pow(first[i] - second[i], 2);
+//        }
+//        return Math.sqrt(distance);
+//    }
 
     /**
      * 搜索最优参数
@@ -269,10 +285,11 @@ public class PSO {
             /** 此轮迭代所有粒子的最优点 */
             double[] m_gBestPosition = gBestPosition.clone();
             /** 此轮迭代群体最佳适应度值 */
-            double m_gBestFitness = Double.MAX_VALUE;
+            Fitness m_gBestFitness = null;
             for (Particle p : m_particles) {
-                double pBestFitness = p.updateFitness();
-                if (pBestFitness < m_gBestFitness) {
+                Fitness pBestFitness = p.getFitness();
+                p.updatePosition();
+                if (pBestFitness.isBetterThan(m_gBestFitness)) {
                     m_gBestFitness = pBestFitness;
                     m_gBestPosition = p.pBestPosition.clone();
                 }
@@ -286,7 +303,7 @@ public class PSO {
 //                    gBestPosition = computeMidPoint(m_gBestPosition,gBestPosition);
 //                }
 //            }
-            if (m_gBestFitness <= gBestFitness) {
+            if (m_gBestFitness.isBetterThan(gBestFitness)) {
                 gBestPosition = m_gBestPosition;
                 gBestFitness = m_gBestFitness;
             }
@@ -294,7 +311,11 @@ public class PSO {
         return gBestPosition;
     }
 
-    public double bestFitness() {
+    public void reset(){
+        initParticles();
+    }
+
+    public Fitness bestFitness() {
         return gBestFitness;
     }
 
