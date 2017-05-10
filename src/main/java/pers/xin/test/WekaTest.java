@@ -2,6 +2,7 @@ package pers.xin.test;
 
 import swjtu.ml.filter.FSException;
 import swjtu.ml.filter.FeatureSelection;
+import swjtu.ml.filter.supervised.FARNeM;
 import swjtu.ml.filter.supervised.RSFSAID;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -31,13 +32,15 @@ public class WekaTest {
     private ArrayList<String> resultStrings = new ArrayList<String>();
 
     public static void main(String[] args) throws Exception{
-        File file = new File("/Users/xin/workspase/DataSet/download_keel/vehicle3.arff");
+        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/ionosphere.arff");
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes()-1);
 
         RSFSAID rsfsaid = new RSFSAID(0.03,0.7,0.3);
 
-        FeatureSelection fs = new FeatureSelection(rsfsaid);
+        FARNeM farNeM = new FARNeM(0.00016);
+
+        FeatureSelection fs = new FeatureSelection(farNeM);
 
         Remove remove = new Remove();
         remove.setInputFormat(instances);

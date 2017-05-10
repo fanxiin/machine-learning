@@ -10,9 +10,11 @@ public interface FSAlgorithm {
      * 实施特征选择，选出子集的索引存储在m_SelectedAttributes（其中包含class）中。
      * @param data
      */
-    public int[] SelectAttributes(Instances data) throws Exception;
+    int[] SelectAttributes(Instances data) throws Exception;
 
-    public String getSelectedAttributesString();
+    String getSelectedAttributesString();
 
-    public int[] getSelectedAttributes();
+    int[] getSelectedAttributes();
+
+    void setParams(double[] params);
 }

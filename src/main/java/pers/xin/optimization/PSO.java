@@ -194,12 +194,6 @@ public class PSO {
                 }
             }
             limitPosition();
-//            if(!inRange()){
-//                for(int i=0; i<numParam; i++){
-//                    position[i] = intervalRand(i);
-//                    velocity[i] = velocityRand(i);
-//                }
-//            }
         }
 
         protected Fitness getFitness() {
@@ -208,19 +202,11 @@ public class PSO {
                 pBestFitness = fitness;
                 pBestPosition = position.clone();
             }
-            System.out.println("("+position[0]+","+position[1]+","+position[2]+")");
+//            System.out.println("("+position[0]+","+position[1]+","+position[2]+")");
 //            updateVelocity();
 //            updatePosition();
             return pBestFitness;
         }
-
-//        protected boolean inRange() {
-//            for (int i = 0; i < intervals.length; i++) {
-//                if (position[i] > intervals[i][1] || position[i] < intervals[i][0])
-//                    return false;
-//            }
-//            return true;
-//        }
 
         protected void limitPosition() {
             for (int i = 0; i < intervals.length; i++) {
@@ -256,22 +242,6 @@ public class PSO {
         }
     }
 
-//    private double[] computeMidPoint(double[] first, double[] secend) {
-//        double[] result = new double[first.length];
-//        for (int i = 0; i < first.length; i++) {
-//            result[i] = (first[i] + secend[i]) / 2.0;
-//        }
-//        return result;
-//    }
-//
-//    private double distance(double[] first, double[] second) {
-//        double distance = 0.0;
-//        for (int i = 0; i < first.length; i++) {
-//            distance += Math.pow(first[i] - second[i], 2);
-//        }
-//        return Math.sqrt(distance);
-//    }
-
     /**
      * 搜索最优参数
      *
@@ -281,7 +251,7 @@ public class PSO {
         initParticles();
 
         for (int i = 0; i < maxIteration; i++) {
-//            System.out.print(".");
+            System.out.print(".");
             /** 此轮迭代所有粒子的最优点 */
             double[] m_gBestPosition = gBestPosition.clone();
             /** 此轮迭代群体最佳适应度值 */

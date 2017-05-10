@@ -27,8 +27,6 @@ public class RSFSAID implements FSAlgorithm {
      */
     private Instances m_data;
 
-    //    /** 属性所在列（从1开始） */
-//    private ArrayList<Integer> numericIndex;
     private int numNumrice;
 
     /**
@@ -81,8 +79,16 @@ public class RSFSAID implements FSAlgorithm {
         this.beta = beta;
     }
 
+    public RSFSAID(){}
+
     public int[] getSelectedAttributes() {
         return m_SelectedAttributes;
+    }
+
+    public void setParams(double[] params) {
+        this.delta = params[0];
+        this.alpha = params[1];
+        this.beta = params[2];
     }
 
     public String getSelectedAttributesString() {
@@ -308,7 +314,7 @@ public class RSFSAID implements FSAlgorithm {
         });
 
         m_SelectedAttributes = new int[selectedAttributes.size()];
-        System.out.println(selectedAttributes.toString());
+//        System.out.println(selectedAttributes.toString());
         for (int col = 0; col < selectedAttributes.size(); col++) {
             m_SelectedAttributes[col] = selectedAttributes.get(col);
         }

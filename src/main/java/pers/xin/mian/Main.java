@@ -1,8 +1,10 @@
 package pers.xin.mian;
 
 import pers.xin.Experiment.Experiment;
-import pers.xin.Experiment.Summary;
+import pers.xin.Experiment.FormatSummary;
 import pers.xin.optimization.PSO;
+import swjtu.ml.filter.supervised.FARNeM;
+import swjtu.ml.filter.supervised.RSFSAID;
 import weka.core.Instances;
 
 import java.io.*;
@@ -30,31 +32,35 @@ public class Main {
 
         File[] files = folder.listFiles();
 
+        FormatSummary summary = new FormatSummary("",1);
+        double[][] interval = {{0,0.1}};
+        int[] precision = {3};
+
         for (String classifierName : clssifiers) {
             m.resultPrintln(classifierName);
-            m.resultPrintln(Summary.header());
+            m.resultPrintln(summary.header());
             for (File file : files) {
                 if(!file.getName().startsWith(".")){
+                    System.out.println("-------- 处理数据集: "+file.getName() +" ---------");
                     try{
                         Instances instances = new Instances(new FileReader(file));
                         instances.setClassIndex(instances.numAttributes()-1);
-                        Experiment e = new Experiment(classifierName,instances);
-                        double[][] interval = {{0,0.1},{0,1},{0,1}};
-                        int[] precision = {3,2,2};
+                        Experiment e = new Experiment(classifierName,instances,summary);
+                        e.setFSAlgorithmName(FARNeM.class.getName());
+//                        double[][] interval = {{0,0.1},{0,1},{0,1}};
+//                        int[] precision = {3,2,2};
                         e.setInterval(interval);
                         e.setPrecision(precision);
                         e.setInterval(interval);
                         e.setPrecision(precision);
-                        Summary oSummary = e.originalAnalyze();
-                        m.resultPrintln(oSummary.toString());
+                        m.resultPrintln(e.originalAnalyze());
                         PSO pso = new PSO(20,20,1,0.00001,0.5,2,2);
                         pso.setObject(e);
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 1; i++) {
                             double[] params = pso.search();
-                            Summary fsSummary = e.RSFSAIDAnalyze(params);
-                            m.resultPrintln(fsSummary.toString());
-                            System.out.println(fsSummary.getReduction());
-                            System.out.println(fsSummary.getROC_Area());
+                            m.resultPrintln(e.FSAnalyze(params));
+//                            System.out.println(fsSummary.getReduction());
+//                            System.out.println(fsSummary.getROC_Area());
                         }
 
                         m.resultPrintln("");

@@ -129,6 +129,7 @@ public class FeatureSelection extends Filter implements SupervisedFilter,
         }
 
         setOutputFormat(outputFormat);
+        outputFormatPeek().setRelationName(informat.relationName()+"-"+m_FSAlgorithm.getClass().getSimpleName());
     }
 
     /**
@@ -179,6 +180,7 @@ public class FeatureSelection extends Filter implements SupervisedFilter,
         m_NewBatch = true;
         return m_FSAlgorithm.getSelectedAttributesString();
     }
+
 
 }
 
