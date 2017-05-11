@@ -5,6 +5,7 @@ import weka.core.neighboursearch.PerformanceStats;
 
 /**
  * Created by xin on 2017/4/13.
+ * 全部为离散型变量时，距离为0表示变量取值相等
  */
 public class MyEuclideanDistance extends NormalizableDistance {
 

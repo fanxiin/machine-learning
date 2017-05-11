@@ -4,6 +4,7 @@ import swjtu.ml.filter.FSException;
 import swjtu.ml.filter.FeatureSelection;
 import swjtu.ml.filter.supervised.FARNeM;
 import swjtu.ml.filter.supervised.RSFSAID;
+import swjtu.ml.filter.supervised.WAR;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 
@@ -12,6 +13,7 @@ import weka.classifiers.trees.J48;
 import weka.core.Instances;
 import weka.core.Utils;
 import weka.filters.Filter;
+import weka.filters.supervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.gui.visualize.PlotData2D;
 import weka.gui.visualize.ThresholdVisualizePanel;
@@ -23,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -32,15 +35,19 @@ public class WekaTest {
     private ArrayList<String> resultStrings = new ArrayList<String>();
 
     public static void main(String[] args) throws Exception{
-        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/ionosphere.arff");
+        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/processed.cleveland.4.arff");
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes()-1);
 
         RSFSAID rsfsaid = new RSFSAID(0.03,0.7,0.3);
 
         FARNeM farNeM = new FARNeM(0.00016);
+        HashMap<String,Double> weight = new HashMap<String, Double>();
+        weight.put("positive",30.0);
+        weight.put("negative",1.0);
+        WAR war = new WAR(0.01,weight);
 
-        FeatureSelection fs = new FeatureSelection(farNeM);
+        FeatureSelection fs = new FeatureSelection(rsfsaid);
 
         Remove remove = new Remove();
         remove.setInputFormat(instances);
@@ -48,6 +55,10 @@ public class WekaTest {
         remove.setOptions(option);
         fs.setInputFormat(instances);
         WekaTest wt = new WekaTest();
+
+//        Discretize discretize = new Discretize();
+//        discretize.setInputFormat(instances);
+//        instances = Filter.useFilter(instances,discretize);
         try {
             String r = fs.selectFeature(instances);
             System.out.println(r);

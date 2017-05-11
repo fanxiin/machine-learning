@@ -91,6 +91,10 @@ public class RSFSAID implements FSAlgorithm {
         this.beta = params[2];
     }
 
+    public void setWeight(HashMap<String, Double> classWeight) {
+        throw new UnsupportedOperationException("暂不支持权重设置");
+    }
+
     public String getSelectedAttributesString() {
         return s_SelectedAttributes;
     }

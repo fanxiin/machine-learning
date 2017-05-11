@@ -2,6 +2,8 @@ package swjtu.ml.filter;
 
 import weka.core.Instances;
 
+import java.util.HashMap;
+
 /**
  * Created by xin on 2017/4/13.
  */
@@ -17,4 +19,6 @@ public interface FSAlgorithm {
     int[] getSelectedAttributes();
 
     void setParams(double[] params);
+
+    void setWeight(HashMap<String, Double> classWeight);
 }

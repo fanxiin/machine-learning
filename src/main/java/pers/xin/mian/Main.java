@@ -5,10 +5,12 @@ import pers.xin.Experiment.FormatSummary;
 import pers.xin.optimization.PSO;
 import swjtu.ml.filter.supervised.FARNeM;
 import swjtu.ml.filter.supervised.RSFSAID;
+import swjtu.ml.filter.supervised.WAR;
 import weka.core.Instances;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by xin on 2017/4/19.
@@ -31,10 +33,17 @@ public class Main {
                 ,weka.classifiers.functions.LibSVM.class.getName()};
 
         File[] files = folder.listFiles();
+//
+//        FormatSummary summary = new FormatSummary("",3);
+//        double[][] interval = {{0,0.1},{0,1},{0,1}};
+//        int[] precision = {3,2,2};
 
         FormatSummary summary = new FormatSummary("",1);
         double[][] interval = {{0,0.1}};
-        int[] precision = {3};
+        int[] precision = {2};
+//        HashMap<String,Double> weight = new HashMap<String, Double>();
+//        weight.put("positive",30.0);
+//        weight.put("negative",1.0);
 
         for (String classifierName : clssifiers) {
             m.resultPrintln(classifierName);
@@ -45,8 +54,10 @@ public class Main {
                     try{
                         Instances instances = new Instances(new FileReader(file));
                         instances.setClassIndex(instances.numAttributes()-1);
-                        Experiment e = new Experiment(classifierName,instances,summary);
+                        Experiment e = new Experiment(classifierName,instances,5,summary);
                         e.setFSAlgorithmName(FARNeM.class.getName());
+
+//                        e.setWeight(weight);
 //                        double[][] interval = {{0,0.1},{0,1},{0,1}};
 //                        int[] precision = {3,2,2};
                         e.setInterval(interval);

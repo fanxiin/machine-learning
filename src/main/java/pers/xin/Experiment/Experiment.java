@@ -28,16 +28,27 @@ public class Experiment extends Optimizable{
     private HashMap<String,Double> paramsAUCBuffer = new HashMap<String, Double>();
     private HashMap<String,Integer> paramsFeatureCountBuffer = new HashMap<String, Integer>();
     private FormatSummary summary;
+    private HashMap<String,Double> weight;
+    private int numFolds;
 
-    public Experiment(String classifierName, Instances data, FormatSummary summary){
+    public Experiment(String classifierName, Instances data, int numFolds,FormatSummary summary){
         this.classifierName =classifierName;
         this.data=data;
         this.summary = summary;
+        this.numFolds = numFolds;
         int[] counts = new int[2];
         for (Instance datum : data) {
             counts[(int)datum.classValue()]++;
         }
         positiveIndex = counts[0]<counts[1]?0:1;
+    }
+
+    public void setNumFolds(int numFolds) {
+        this.numFolds = numFolds;
+    }
+
+    public void setWeight(HashMap<String, Double> weight) {
+        this.weight = weight;
     }
 
     public void setFSAlgorithmName(String FSAlgorithmName) {
@@ -84,6 +95,9 @@ public class Experiment extends Optimizable{
 
         if(!paramsAUCBuffer.containsKey(paramsCode)){
             FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
+            if(weight!=null){
+                algorithm.setWeight(weight);
+            }
             algorithm.setParams(params);
             FeatureSelection fs = new FeatureSelection(algorithm);
             fs.setInputFormat(data);
@@ -120,7 +134,7 @@ public class Experiment extends Optimizable{
      */
     public double computeAUC(Instances data,Classifier classifier) throws Exception {
         Evaluation eval = new Evaluation(data);
-        eval.crossValidateModel(classifier,data,10,new Random(1));
+        eval.crossValidateModel(classifier,data,numFolds,new Random(1));
         return eval.areaUnderROC(positiveIndex);
     }
 
@@ -132,7 +146,7 @@ public class Experiment extends Optimizable{
     public String originalAnalyze() throws Exception {
         Evaluation eval = new Evaluation(data);
         Classifier classifier = (Classifier) Class.forName(classifierName).newInstance();
-        eval.crossValidateModel(classifier,data,10,new Random(1));
+        eval.crossValidateModel(classifier,data,numFolds,new Random(1));
         return summary.format(eval,positiveIndex);
     }
 
@@ -144,6 +158,9 @@ public class Experiment extends Optimizable{
      */
     public String FSAnalyze(double[] params) throws Exception {
         FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
+        if(weight!=null){
+            algorithm.setWeight(weight);
+        }
         algorithm.setParams(params);
         FeatureSelection fs = new FeatureSelection(algorithm);
         fs.setInputFormat(data);
@@ -151,7 +168,7 @@ public class Experiment extends Optimizable{
         Instances fs_data = Filter.useFilter(data,fs);
         Evaluation eval = new Evaluation(fs_data);
         Classifier classifier = (Classifier) Class.forName(classifierName).newInstance();
-        eval.crossValidateModel(classifier,fs_data,10,new Random(1));
+        eval.crossValidateModel(classifier,fs_data,numFolds,new Random(1));
         return summary.format(params, reduction, eval, positiveIndex);
     }
 
@@ -163,6 +180,9 @@ public class Experiment extends Optimizable{
      */
     public Instances trainSetFS(double[] params) throws Exception {
         FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
+        if(weight!=null){
+            algorithm.setWeight(weight);
+        }
         algorithm.setParams(params);
         FeatureSelection fs = new FeatureSelection(algorithm);
         fs.setInputFormat(data);

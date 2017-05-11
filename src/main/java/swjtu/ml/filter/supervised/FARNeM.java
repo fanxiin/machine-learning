@@ -7,6 +7,7 @@ import weka.core.Instances;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -53,6 +54,10 @@ public class FARNeM implements FSAlgorithm {
 
     public void setParams(double[] params) {
         this.delta=params[0];
+    }
+
+    public void setWeight(HashMap<String, Double> classWeight) {
+        throw new UnsupportedOperationException("暂不支持权重设置");
     }
 
     public int[] SelectAttributes(Instances data) throws Exception {
