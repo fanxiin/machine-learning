@@ -4,14 +4,18 @@ import swjtu.ml.filter.FSAlgorithm;
 import swjtu.ml.filter.FSException;
 import swjtu.ml.utils.MyEuclideanDistance;
 import swjtu.ml.utils.Tuple2;
-import weka.core.*;
+import weka.core.Attribute;
+import weka.core.Instances;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 
 /**
- * Created by xin on 2017/4/13.
+ * Created by xin on 2017/5/22.
  */
-public class RSFSAID implements FSAlgorithm {
+public class RSFSAIDS implements FSAlgorithm{
     /**
      * 领域粗糙集的距离阈值
      */
@@ -73,13 +77,13 @@ public class RSFSAID implements FSAlgorithm {
      * @param alpha
      * @param beta
      */
-    public RSFSAID(double delta, double alpha, double beta) {
+    public RSFSAIDS(double delta, double alpha, double beta) {
         this.delta = delta;
         this.alpha = alpha;
         this.beta = beta;
     }
 
-    public RSFSAID(){}
+    public RSFSAIDS(){}
 
     public int[] getSelectedAttributes() {
         return m_SelectedAttributes;
@@ -110,7 +114,7 @@ public class RSFSAID implements FSAlgorithm {
             for (int j = i; j < dataCount; j++) {
                 if(numNumrice!=0)
                     m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                        m_data.get(j)) / numNumrice;
+                            m_data.get(j)) / numNumrice;
                 else
                     m_distance = m_EuclideanDistance.distance(m_data.get(i),
                             m_data.get(j));
@@ -195,14 +199,14 @@ public class RSFSAID implements FSAlgorithm {
             /**************** 如果该领域内正负类个数相等？ *******************/
             /** 下边界大于上边界，故给单个对象分类时将其分入正类，则领域中实际为负类的对象分错
              *  即错正类 */
-            if (posAndNeg[posIndex] >= posAndNeg[negIndex] && instanceClass[i] == negIndex)
+            if (posAndNeg[posIndex] >= posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
                 FP++;
             /** 上边界大于下边界 */
-            if (posAndNeg[negIndex] >= posAndNeg[posIndex] && instanceClass[i] == posIndex)
+            if (posAndNeg[negIndex] >= posAndNeg[posIndex]*beta && instanceClass[i] == posIndex)
                 FN++;
         }
 
-        return 1 - (alpha * FP / nPos + beta * FN / nNeg) / 2;
+        return 1 - (alpha * FP / nPos + (1-alpha) * FN / nNeg) / 2;
     }
 
 
@@ -328,4 +332,3 @@ public class RSFSAID implements FSAlgorithm {
     }
 
 }
-

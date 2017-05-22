@@ -28,7 +28,6 @@ public class Experiment extends Optimizable{
     private HashMap<String,Double> paramsAUCBuffer = new HashMap<String, Double>();
     private HashMap<String,Integer> paramsFeatureCountBuffer = new HashMap<String, Integer>();
     private FormatSummary summary;
-    private HashMap<String,Double> weight;
     private int numFolds;
 
     public Experiment(String classifierName, Instances data, int numFolds,FormatSummary summary){
@@ -47,10 +46,6 @@ public class Experiment extends Optimizable{
         this.numFolds = numFolds;
     }
 
-    public void setWeight(HashMap<String, Double> weight) {
-        this.weight = weight;
-    }
-
     public void setFSAlgorithmName(String FSAlgorithmName) {
         this.FSAlgorithmName = FSAlgorithmName;
     }
@@ -65,16 +60,13 @@ public class Experiment extends Optimizable{
      * @return
      */
     public Fitness computeFitness(double[] params){
-        //Fitness AUC = new AUCFSFitness(0,0);
-//        for (int i = 0; i < params.length; i++) {
-//            BigDecimal b = new BigDecimal(params[i]);
-//            params[i] = b.setScale(3,BigDecimal.ROUND_HALF_UP).doubleValue();
-//        }
         try {
             return FSTest(params);
         } catch (Exception e) {
             if(e instanceof FSException) System.out.println(e.getMessage());
-            return new AUCFSFitness(0,0);
+//            return new AUCFSFitness(0,0);
+            return new AUCFSFitness(0);
+
         }
     }
 
@@ -85,7 +77,7 @@ public class Experiment extends Optimizable{
      * @return 返回AUC值
      * @throws Exception 参数不合适时抛出FSException
      */
-    public AUCFSFitness FSTest(double[] params) throws Exception {
+    public Fitness FSTest(double[] params) throws Exception {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < params.length; i++) {
             sb.append(params[i]+",");
@@ -95,9 +87,6 @@ public class Experiment extends Optimizable{
 
         if(!paramsAUCBuffer.containsKey(paramsCode)){
             FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
-            if(weight!=null){
-                algorithm.setWeight(weight);
-            }
             algorithm.setParams(params);
             FeatureSelection fs = new FeatureSelection(algorithm);
             fs.setInputFormat(data);
@@ -111,8 +100,9 @@ public class Experiment extends Optimizable{
             paramsAUCBuffer.put(paramsCode,featuresAUC.get(features));
         }
         double AUC = paramsAUCBuffer.get(paramsCode);
-        int featureCount = paramsFeatureCountBuffer.get(paramsCode);
-        return new AUCFSFitness(AUC,featureCount);
+//        int featureCount = paramsFeatureCountBuffer.get(paramsCode);
+//        return new AUCFSFitness(AUC,featureCount);
+        return new AUCFSFitness(AUC);
     }
 
     /**
@@ -158,9 +148,6 @@ public class Experiment extends Optimizable{
      */
     public String FSAnalyze(double[] params) throws Exception {
         FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
-        if(weight!=null){
-            algorithm.setWeight(weight);
-        }
         algorithm.setParams(params);
         FeatureSelection fs = new FeatureSelection(algorithm);
         fs.setInputFormat(data);
@@ -180,9 +167,6 @@ public class Experiment extends Optimizable{
      */
     public Instances trainSetFS(double[] params) throws Exception {
         FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
-        if(weight!=null){
-            algorithm.setWeight(weight);
-        }
         algorithm.setParams(params);
         FeatureSelection fs = new FeatureSelection(algorithm);
         fs.setInputFormat(data);

@@ -56,10 +56,6 @@ public class FARNeM implements FSAlgorithm {
         this.delta=params[0];
     }
 
-    public void setWeight(HashMap<String, Double> classWeight) {
-        throw new UnsupportedOperationException("暂不支持权重设置");
-    }
-
     public int[] SelectAttributes(Instances data) throws Exception {
         initFeatureSelection(data);
         int numAttr = m_data.numAttributes()-1;
@@ -158,8 +154,10 @@ public class FARNeM implements FSAlgorithm {
         int[][] neighborSets = new int[dataCount][dataCount];
         for (int i = 0; i < dataCount; i++) {
             for (int j = i; j < dataCount; j++) {
+//                double m_distance = m_EuclideanDistance.distance(m_data.get(i),
+//                        m_data.get(j))/numNumrice;
                 double m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                        m_data.get(j))/numNumrice;
+                        m_data.get(j));
                 if (m_distance <= delta) {
                     neighborSets[i][j] = 1;
                     neighborSets[j][i] = 1;

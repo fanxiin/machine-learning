@@ -44,11 +44,8 @@ public class WAR implements FSAlgorithm{
 
     private MyEuclideanDistance m_EuclideanDistance;
 
-    HashMap<String, Double> classWeight;
-
-    public WAR(double sigma, HashMap<String,Double> classWeight){
+    public WAR(double sigma){
         this.sigma=sigma;
-        this.classWeight=classWeight;
     }
 
     public WAR(){}
@@ -60,10 +57,6 @@ public class WAR implements FSAlgorithm{
         discretize.setInputFormat(data);
         data = Filter.useFilter(data,discretize);
         initFeatureSelection(data);
-
-        /**设置权重*/
-        if(classWeight!=null)
-            setWeight();
 
         int numAttr = m_data.numAttributes()-1;
         /**计算H(D|C)*/
@@ -125,10 +118,6 @@ public class WAR implements FSAlgorithm{
 
     public void setParams(double[] params) {
         this.sigma = params[0];
-    }
-
-    public void setWeight(HashMap<String, Double> classWeight) {
-        this.classWeight = classWeight;
     }
 
     /**
@@ -211,11 +200,18 @@ public class WAR implements FSAlgorithm{
         m_data = data;
         m_EuclideanDistance = new MyEuclideanDistance(data);
         tempReduction = new HashSet<Integer>();
-        double sw = 0.0;
+        /**
+         * An inverse class probability weight is assigned to each sample for class imbalance learning
+         */
+        int[] classCount = new int[m_data.classAttribute().numValues()];
         for (Instance m_datum : m_data) {
-            sw += m_datum.weight();
+            classCount[(int)m_datum.classValue()]++;
         }
-        sumWeight = sw;
+
+        for (Instance m_datum : m_data) {
+            m_datum.setWeight(1.0/classCount[(int)m_datum.classValue()]);
+        }
+        sumWeight = m_data.classAttribute().numValues();
     }
     /**
      * 计算加权熵H(B)
@@ -263,16 +259,6 @@ public class WAR implements FSAlgorithm{
     private double log2(double x){
         if(x==0)return 0;
         return Math.log(x)/Math.log(2);
-    }
-
-    private void setWeight(){
-        for (Map.Entry<String, Double> stringDoubleEntry : classWeight.entrySet()) {
-            double valueIndex = m_data.classAttribute().indexOfValue(stringDoubleEntry.getKey());
-            for (Instance m_datum : m_data) {
-                if(valueIndex == m_datum.classValue())
-                    m_datum.setWeight(stringDoubleEntry.getValue());
-            }
-        }
     }
 
 }

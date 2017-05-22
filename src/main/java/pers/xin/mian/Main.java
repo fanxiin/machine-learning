@@ -1,10 +1,12 @@
 package pers.xin.mian;
 
+import org.apache.log4j.Logger;
 import pers.xin.Experiment.Experiment;
 import pers.xin.Experiment.FormatSummary;
 import pers.xin.optimization.PSO;
 import swjtu.ml.filter.supervised.FARNeM;
 import swjtu.ml.filter.supervised.RSFSAID;
+import swjtu.ml.filter.supervised.RSFSAIDS;
 import swjtu.ml.filter.supervised.WAR;
 import weka.core.Instances;
 
@@ -16,12 +18,14 @@ import java.util.HashMap;
  * Created by xin on 2017/4/19.
  */
 public class Main {
+    private static Logger logger=Logger.getLogger("detail");
+    private static Logger m_logger=Logger.getLogger("matlab");
 
     private ArrayList<String> analyzeStrings = new ArrayList<String>();
 
     public static void main(String[] args) throws Exception {
 
-        File folder = new File("/Users/xin/Desktop/ExperimentData/myDataARFF");
+        File folder = new File("/Users/xin/Desktop/ExperimentData/failedData");
 
         Main m = new Main();
 
@@ -32,15 +36,40 @@ public class Main {
                 ,weka.classifiers.bayes.NaiveBayes.class.getName()
                 ,weka.classifiers.functions.LibSVM.class.getName()};
 
-        File[] files = folder.listFiles();
-//
-//        FormatSummary summary = new FormatSummary("",3);
-//        double[][] interval = {{0,0.1},{0,1},{0,1}};
-//        int[] precision = {3,2,2};
+        int maxIterate=20;
+        int swarmSize=20;
+        int psoTimes=3;
 
-        FormatSummary summary = new FormatSummary("",1);
-        double[][] interval = {{0,0.1}};
-        int[] precision = {2};
+        File[] files = folder.listFiles();
+
+        StringBuilder ss = new StringBuilder();
+        for (String clssifier : clssifiers) {
+            ss.append(clssifier);
+            ss.append("\n");
+        }
+        ss.append("----------------\n");
+        for (File file : files) {
+            String name = file.getName();
+            if(!name.startsWith(".")){
+                ss.append(name);
+                ss.append("\n");
+            }
+        }
+        ss.append("swarmSize:"+swarmSize+"\n");
+        ss.append("MaxIterate:"+maxIterate+"\n");
+        ss.append("PSOTimes:"+psoTimes+"\n");
+
+        ss.append("----------------\n");
+        m_logger.info(ss.toString());
+        logger.info(ss.toString());
+//
+        FormatSummary summary = new FormatSummary("",3);
+        double[][] interval = {{0,0.1},{0,1},{0,1}};
+        int[] precision = {3,2,2};
+
+//        FormatSummary summary = new FormatSummary("",1);
+//        double[][] interval = {{0,0.1}};
+//        int[] precision = {2};
 //        HashMap<String,Double> weight = new HashMap<String, Double>();
 //        weight.put("positive",30.0);
 //        weight.put("negative",1.0);
@@ -51,23 +80,21 @@ public class Main {
             for (File file : files) {
                 if(!file.getName().startsWith(".")){
                     System.out.println("-------- 处理数据集: "+file.getName() +" ---------");
+                    logger.info("-------- "+file.getName() +"-"+classifierName+" ---------");
+
                     try{
                         Instances instances = new Instances(new FileReader(file));
                         instances.setClassIndex(instances.numAttributes()-1);
                         Experiment e = new Experiment(classifierName,instances,5,summary);
-                        e.setFSAlgorithmName(FARNeM.class.getName());
-
-//                        e.setWeight(weight);
-//                        double[][] interval = {{0,0.1},{0,1},{0,1}};
-//                        int[] precision = {3,2,2};
-                        e.setInterval(interval);
-                        e.setPrecision(precision);
+                        e.setFSAlgorithmName(RSFSAIDS.class.getName());
                         e.setInterval(interval);
                         e.setPrecision(precision);
                         m.resultPrintln(e.originalAnalyze());
-                        PSO pso = new PSO(20,20,1,0.00001,0.5,2,2);
+                        //logger.info("-------- origin AUC"+summary.getROC_Area()+" ---------");
+                        PSO pso = new PSO(swarmSize,maxIterate,1,0.00001,0.5,2,2);
                         pso.setObject(e);
-                        for (int i = 0; i < 1; i++) {
+                        for (int i = 0; i < psoTimes; i++) {
+                            logger.info("-------- pso"+i+" ---------");
                             double[] params = pso.search();
                             m.resultPrintln(e.FSAnalyze(params));
 //                            System.out.println(fsSummary.getReduction());

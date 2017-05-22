@@ -1,5 +1,7 @@
 package pers.xin.optimization;
 
+import org.apache.log4j.Logger;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Random;
@@ -8,6 +10,9 @@ import java.util.Random;
  * Created by xin on 2017/4/18.
  */
 public class PSO {
+
+    private Logger logger = Logger.getLogger("detail");
+    private static Logger m_logger=Logger.getLogger("matlab");
 
     /**
      * 优化参数个数
@@ -202,9 +207,13 @@ public class PSO {
                 pBestFitness = fitness;
                 pBestPosition = position.clone();
             }
-//            System.out.println("("+position[0]+","+position[1]+","+position[2]+")");
-//            updateVelocity();
-//            updatePosition();
+            StringBuilder sb = new StringBuilder();
+            for (double v : position) {
+                sb.append(v+" ");
+            }
+            sb.append(fitness.fitness());
+            logger.info(sb.toString());
+            m_logger.info(sb.toString());
             return pBestFitness;
         }
 
@@ -251,6 +260,7 @@ public class PSO {
         initParticles();
 
         for (int i = 0; i < maxIteration; i++) {
+            logger.info("iterate "+i);
             System.out.print(".");
             /** 此轮迭代所有粒子的最优点 */
             double[] m_gBestPosition = gBestPosition.clone();
@@ -264,15 +274,6 @@ public class PSO {
                     m_gBestPosition = p.pBestPosition.clone();
                 }
             }
-//            if(m_gBestFitness==gBestFitness){
-//                double distance = distance(m_gBestPosition,gBestPosition);
-//                if(distance<=threshold){
-//                    return gBestPosition;
-//                }
-//                else {
-//                    gBestPosition = computeMidPoint(m_gBestPosition,gBestPosition);
-//                }
-//            }
             if (m_gBestFitness.isBetterThan(gBestFitness)) {
                 gBestPosition = m_gBestPosition;
                 gBestFitness = m_gBestFitness;

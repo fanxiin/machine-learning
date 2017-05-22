@@ -32,28 +32,31 @@ import java.util.Random;
  * Created by xin on 2017/4/6.
  */
 public class WekaTest {
+    ThresholdVisualizePanel tvp = new ThresholdVisualizePanel();
+
     private ArrayList<String> resultStrings = new ArrayList<String>();
 
     public static void main(String[] args) throws Exception{
-        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/processed.cleveland.4.arff");
+        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/ionosphere.arff");
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes()-1);
 
-        RSFSAID rsfsaid = new RSFSAID(0.03,0.7,0.3);
+        RSFSAID rsfsaid = new RSFSAID(0.033,0.6,0.02);
 
         FARNeM farNeM = new FARNeM(0.00016);
         HashMap<String,Double> weight = new HashMap<String, Double>();
         weight.put("positive",30.0);
         weight.put("negative",1.0);
-        WAR war = new WAR(0.01,weight);
+        WAR war = new WAR(0.2);
 
         FeatureSelection fs = new FeatureSelection(rsfsaid);
-
+        FeatureSelection fs1 = new FeatureSelection(war);
         Remove remove = new Remove();
         remove.setInputFormat(instances);
         String[] option = weka.core.Utils.splitOptions("-R 2,3,6");
         remove.setOptions(option);
         fs.setInputFormat(instances);
+        fs1.setInputFormat(instances);
         WekaTest wt = new WekaTest();
 
 //        Discretize discretize = new Discretize();
@@ -63,36 +66,21 @@ public class WekaTest {
             String r = fs.selectFeature(instances);
             System.out.println(r);
             Instances newInstances = Filter.useFilter(instances,fs);
-            wt.plot(new J48(), newInstances,"FS");
+            wt.addPlot(new J48(), newInstances,"RSFSAID");
+
+            r = fs1.selectFeature(instances);
+            System.out.println(r);
+            Instances newInstances1 = Filter.useFilter(instances,fs1);
+            wt.addPlot(new J48(), newInstances1,"war");
         }catch (FSException e){
             e.printStackTrace();
         }
-        wt.plot(new J48(),instances,"original");
+        wt.addPlot(new J48(), instances, "original");
+        wt.plot("original");
 
     }
 
-    public void plot(Classifier classifier, Instances instances,String title) throws Exception {
-
-        Evaluation eval = new Evaluation(instances);
-        eval.crossValidateModel(classifier,instances,10,new Random(1));
-
-        ThresholdCurve tc = new ThresholdCurve();
-        int classIndex = 0;
-        Instances result = tc.getCurve(eval.predictions());
-
-        ThresholdVisualizePanel tvp = new ThresholdVisualizePanel();
-        tvp.setROCString("(AUC = "+
-                Utils.doubleToString(tc.getROCArea(result),4)+")");
-        tvp.setName(result.relationName());
-        PlotData2D pd = new PlotData2D(result);
-        pd.setPlotName(result.relationName());
-        pd.addInstanceNumberAttribute();
-
-        boolean[] cp = new boolean[result.numInstances()];
-        for (int i=1;i<cp.length;i++) cp[i]=true;
-        pd.setConnectPoints(cp);
-        tvp.addPlot(pd);
-
+    public void plot(String title) throws Exception {
         String plotName = tvp.getName();
         final javax.swing.JFrame jf =
                 new javax.swing.JFrame(title+": "+plotName);
@@ -107,6 +95,25 @@ public class WekaTest {
         });
         jf.setVisible(true);
     }
+
+    public void addPlot(Classifier classifier, Instances instances, String plotName) throws Exception {
+        Evaluation eval = new Evaluation(instances);
+        eval.crossValidateModel(classifier,instances,10,new Random(1));
+        ThresholdCurve tc = new ThresholdCurve();
+        int classIndex = 0;
+        Instances result = tc.getCurve(eval.predictions());
+//        tvp.setROCString("(AUC = "+
+//                Utils.doubleToString(tc.getROCArea(result),4)+")");
+        tvp.setName(result.relationName());
+        PlotData2D pd = new PlotData2D(result);
+        pd.setPlotName(plotName+"-"+Utils.doubleToString(tc.getROCArea(result),4));
+        pd.addInstanceNumberAttribute();
+        boolean[] cp = new boolean[result.numInstances()];
+        for (int i=1;i<cp.length;i++) cp[i]=true;
+        pd.setConnectPoints(cp);
+        tvp.addPlot(pd);
+    }
+
 
     public void output() throws Exception {
         File file = new File("/Users/xin/workspase/DataSet/ionosphere/result.csv");

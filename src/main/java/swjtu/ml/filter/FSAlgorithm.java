@@ -20,5 +20,4 @@ public interface FSAlgorithm {
 
     void setParams(double[] params);
 
-    void setWeight(HashMap<String, Double> classWeight);
 }
