@@ -2,6 +2,7 @@ package pers.xin.test;
 
 import swjtu.ml.filter.FeatureSelection;
 import swjtu.ml.filter.supervised.FARNeM;
+import swjtu.ml.filter.supervised.RSFSAID;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -15,12 +16,13 @@ import java.util.Random;
  */
 public class AlgorithmTest {
     public static void main(String[] args) throws Exception {
-        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/ionosphere.arff");
+        File file = new File("/Users/xin/Desktop/ExperimentData/binaryARFF/tic-tac-toe.arff");
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes() - 1);
 
         FARNeM farNeM = new FARNeM(0.125);
-        FeatureSelection fs = new FeatureSelection(farNeM);
+        RSFSAID rsfsaid = new RSFSAID(0.01,0.5,0.5);
+        FeatureSelection fs = new FeatureSelection(rsfsaid);
         fs.setInputFormat(instances);
         String result = fs.selectFeature(instances);
         System.out.println(result);

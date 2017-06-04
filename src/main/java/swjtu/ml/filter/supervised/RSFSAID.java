@@ -221,8 +221,8 @@ public class RSFSAID implements FSAlgorithm {
             instanceClass[i] = classVlaue;
             classCount[classVlaue]++;
         }
-
-        posIndex = classCount[0] < classCount[1] ? 0 : 1;
+        /** 当两类对象数相等，令posIndex=0，negIndex=1 */
+        posIndex = classCount[0] <= classCount[1] ? 0 : 1;
 
         negIndex = classCount[0] > classCount[1] ? 0 : 1;
     }

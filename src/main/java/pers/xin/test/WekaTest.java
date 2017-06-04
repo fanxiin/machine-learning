@@ -8,8 +8,11 @@ import swjtu.ml.filter.supervised.WAR;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.evaluation.ThresholdCurve;
+import weka.classifiers.functions.LibSVM;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.Utils;
 import weka.filters.Filter;
@@ -37,26 +40,22 @@ public class WekaTest {
     private ArrayList<String> resultStrings = new ArrayList<String>();
 
     public static void main(String[] args) throws Exception{
-        File file = new File("/Users/xin/Desktop/ExperimentData/myDataARFF/ionosphere.arff");
+        File file = new File("/Users/xin/Desktop/ExperimentData/binaryARFF/bands.arff");
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes()-1);
 
-        RSFSAID rsfsaid = new RSFSAID(0.033,0.6,0.02);
+        RSFSAID rsfsaid = new RSFSAID(0.064,0.44,0);
 
-        FARNeM farNeM = new FARNeM(0.00016);
-        HashMap<String,Double> weight = new HashMap<String, Double>();
-        weight.put("positive",30.0);
-        weight.put("negative",1.0);
-        WAR war = new WAR(0.2);
+        FARNeM farNeM = new FARNeM(0.125);
+        WAR war = new WAR(0.1);
 
         FeatureSelection fs = new FeatureSelection(rsfsaid);
         FeatureSelection fs1 = new FeatureSelection(war);
-        Remove remove = new Remove();
-        remove.setInputFormat(instances);
-        String[] option = weka.core.Utils.splitOptions("-R 2,3,6");
-        remove.setOptions(option);
+        FeatureSelection fs2 = new FeatureSelection(farNeM);
+
         fs.setInputFormat(instances);
         fs1.setInputFormat(instances);
+        fs2.setInputFormat(instances);
         WekaTest wt = new WekaTest();
 
 //        Discretize discretize = new Discretize();
@@ -68,13 +67,22 @@ public class WekaTest {
             Instances newInstances = Filter.useFilter(instances,fs);
             wt.addPlot(new J48(), newInstances,"RSFSAID");
 
+
+
             r = fs1.selectFeature(instances);
             System.out.println(r);
             Instances newInstances1 = Filter.useFilter(instances,fs1);
-            wt.addPlot(new J48(), newInstances1,"war");
+            wt.addPlot(new J48(), newInstances1,"WAR");
+
+            r = fs2.selectFeature(instances);
+            System.out.println(r);
+            Instances newInstances2 = Filter.useFilter(instances,fs2);
+            wt.addPlot(new J48(), newInstances2,"FARNeM");
+
         }catch (FSException e){
             e.printStackTrace();
         }
+
         wt.addPlot(new J48(), instances, "original");
         wt.plot("original");
 
@@ -98,7 +106,7 @@ public class WekaTest {
 
     public void addPlot(Classifier classifier, Instances instances, String plotName) throws Exception {
         Evaluation eval = new Evaluation(instances);
-        eval.crossValidateModel(classifier,instances,10,new Random(1));
+        eval.crossValidateModel(classifier,instances,5,new Random(1));
         ThresholdCurve tc = new ThresholdCurve();
         int classIndex = 0;
         Instances result = tc.getCurve(eval.predictions());

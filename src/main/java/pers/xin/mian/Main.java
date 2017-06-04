@@ -8,7 +8,10 @@ import swjtu.ml.filter.supervised.FARNeM;
 import swjtu.ml.filter.supervised.RSFSAID;
 import swjtu.ml.filter.supervised.RSFSAIDS;
 import swjtu.ml.filter.supervised.WAR;
+import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.supervised.instance.SMOTE;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -21,11 +24,9 @@ public class Main {
     private static Logger logger=Logger.getLogger("detail");
     private static Logger m_logger=Logger.getLogger("matlab");
 
-    private ArrayList<String> analyzeStrings = new ArrayList<String>();
-
     public static void main(String[] args) throws Exception {
 
-        File folder = new File("/Users/xin/Desktop/ExperimentData/failedData");
+        File folder = new File("/Users/xin/Desktop/ExperimentData/RSFSAIDS");
 
         Main m = new Main();
 
@@ -38,7 +39,7 @@ public class Main {
 
         int maxIterate=20;
         int swarmSize=20;
-        int psoTimes=3;
+        int psoTimes=1;
 
         File[] files = folder.listFiles();
 
@@ -85,6 +86,7 @@ public class Main {
                     try{
                         Instances instances = new Instances(new FileReader(file));
                         instances.setClassIndex(instances.numAttributes()-1);
+//                        Instances t = m.smote(instances);
                         Experiment e = new Experiment(classifierName,instances,5,summary);
                         e.setFSAlgorithmName(RSFSAIDS.class.getName());
                         e.setInterval(interval);
@@ -130,8 +132,23 @@ public class Main {
 //        pw.close();
 //    }
 
+    public Instances smote(Instances instances) throws Exception {
+        int count[] = new int[2];
+        for (Instance instance : instances) {
+            count[(int)instance.classValue()]++;
+        }
+        int percentage = count[0]>count[1] ? (count[0]-count[1])*100/count[1] : (count[1]-count[0])*100/count[0];
+        SMOTE s = new SMOTE();
+        int seed = (int) (Math.random() * 10);
+        String[] options = {"-S", String.valueOf(seed), "-P", ""+percentage, "-K", "5"};
+        s.setOptions(options);
+        s.setInputFormat(instances);
+        return Filter.useFilter(instances,s);
+    }
+
+
     public void resultPrintln(String data) throws Exception{
-        File file = new File("/Users/xin/Desktop/ExperimentData/m_result/result.csv");
+        File file = new File("/Users/xin/Desktop/ExperimentData/RSFSAIDSTest/result.csv");
         if(!file.getParentFile().exists()){
             file.getParentFile().mkdirs();
         }
