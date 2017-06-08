@@ -4,10 +4,7 @@ import org.apache.log4j.Logger;
 import pers.xin.Experiment.Experiment;
 import pers.xin.Experiment.FormatSummary;
 import pers.xin.optimization.PSO;
-import swjtu.ml.filter.supervised.FARNeM;
-import swjtu.ml.filter.supervised.RSFSAID;
-import swjtu.ml.filter.supervised.RSFSAIDS;
-import swjtu.ml.filter.supervised.WAR;
+import swjtu.ml.filter.supervised.*;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -26,7 +23,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        File folder = new File("/Users/xin/Desktop/ExperimentData/RSFSAIDS");
+        File folder = new File("/Users/xin/Desktop/ExperimentData/test");
 
         Main m = new Main();
 
@@ -37,9 +34,9 @@ public class Main {
                 ,weka.classifiers.bayes.NaiveBayes.class.getName()
                 ,weka.classifiers.functions.LibSVM.class.getName()};
 
-        int maxIterate=20;
-        int swarmSize=20;
-        int psoTimes=1;
+        int maxIterate=25;
+        int swarmSize=30;
+        int psoTimes=2;
 
         File[] files = folder.listFiles();
 
@@ -65,8 +62,8 @@ public class Main {
         logger.info(ss.toString());
 //
         FormatSummary summary = new FormatSummary("",3);
-        double[][] interval = {{0,0.1},{0,1},{0,1}};
-        int[] precision = {3,2,2};
+        double[][] interval = {{0,1},{0,1},{0,1}};
+        int[] precision = {2,2,2};
 
 //        FormatSummary summary = new FormatSummary("",1);
 //        double[][] interval = {{0,0.1}};
@@ -88,7 +85,7 @@ public class Main {
                         instances.setClassIndex(instances.numAttributes()-1);
 //                        Instances t = m.smote(instances);
                         Experiment e = new Experiment(classifierName,instances,5,summary);
-                        e.setFSAlgorithmName(RSFSAIDS.class.getName());
+                        e.setFSAlgorithmName(RSFSAID4.class.getName());
                         e.setInterval(interval);
                         e.setPrecision(precision);
                         m.resultPrintln(e.originalAnalyze());
@@ -148,7 +145,7 @@ public class Main {
 
 
     public void resultPrintln(String data) throws Exception{
-        File file = new File("/Users/xin/Desktop/ExperimentData/RSFSAIDSTest/result.csv");
+        File file = new File("/Users/xin/Desktop/ExperimentData/RSFSAIDSTest/result2.csv");
         if(!file.getParentFile().exists()){
             file.getParentFile().mkdirs();
         }

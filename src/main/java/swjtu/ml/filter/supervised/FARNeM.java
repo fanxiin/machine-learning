@@ -1,13 +1,12 @@
 package swjtu.ml.filter.supervised;
 
 import swjtu.ml.filter.FSAlgorithm;
-import swjtu.ml.utils.MyEuclideanDistance;
+import swjtu.ml.utils.MyDistance1;
 import weka.core.Attribute;
 import weka.core.Instances;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -40,7 +39,7 @@ public class FARNeM implements FSAlgorithm {
 
     private String s_SelectedAttributes = "";
 
-    private MyEuclideanDistance m_EuclideanDistance;
+    private MyDistance1 m_EuclideanDistance;
 
     public FARNeM(double delta) {
         this.delta = delta;
@@ -108,7 +107,7 @@ public class FARNeM implements FSAlgorithm {
      */
     private void initFeatureSelection(Instances data) throws Exception {
         m_data = data;
-        m_EuclideanDistance = new MyEuclideanDistance(data);
+        m_EuclideanDistance = new MyDistance1(data);
         red = new HashSet<Integer>();
         numNumrice = 0;
         for (int i = 0; i < m_data.numAttributes() - 1; i++) {

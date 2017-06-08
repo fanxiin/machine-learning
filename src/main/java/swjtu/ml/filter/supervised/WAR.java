@@ -2,7 +2,7 @@ package swjtu.ml.filter.supervised;
 
 import swjtu.ml.filter.FSAlgorithm;
 
-import swjtu.ml.utils.MyEuclideanDistance;
+import swjtu.ml.utils.MyDistance1;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -42,7 +42,7 @@ public class WAR implements FSAlgorithm{
 
     private String s_SelectedAttributes = "";
 
-    private MyEuclideanDistance m_EuclideanDistance;
+    private MyDistance1 m_EuclideanDistance;
 
     public WAR(double sigma){
         this.sigma=sigma;
@@ -198,7 +198,7 @@ public class WAR implements FSAlgorithm{
      */
     private void initFeatureSelection(Instances data) throws Exception {
         m_data = data;
-        m_EuclideanDistance = new MyEuclideanDistance(data);
+        m_EuclideanDistance = new MyDistance1(data);
         tempReduction = new HashSet<Integer>();
         /**
          * An inverse class probability weight is assigned to each sample for class imbalance learning

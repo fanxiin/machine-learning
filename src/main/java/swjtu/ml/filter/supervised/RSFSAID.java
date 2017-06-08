@@ -2,7 +2,7 @@ package swjtu.ml.filter.supervised;
 
 import swjtu.ml.filter.FSAlgorithm;
 import swjtu.ml.filter.FSException;
-import swjtu.ml.utils.MyEuclideanDistance;
+import swjtu.ml.utils.MyDistance1;
 import swjtu.ml.utils.Tuple2;
 import weka.core.*;
 
@@ -27,7 +27,7 @@ public class RSFSAID implements FSAlgorithm {
      */
     private Instances m_data;
 
-    private int numNumrice;
+    private int numNumeric;
 
     /**
      * 领域集合
@@ -64,7 +64,7 @@ public class RSFSAID implements FSAlgorithm {
 
     private String s_SelectedAttributes = "";
 
-    private MyEuclideanDistance m_EuclideanDistance;
+    private MyDistance1 m_EuclideanDistance;
 
     /**
      * 特征选择算法构造函数
@@ -108,9 +108,9 @@ public class RSFSAID implements FSAlgorithm {
         double m_distance=0.0;
         for (int i = 0; i < dataCount; i++) {
             for (int j = i; j < dataCount; j++) {
-                if(numNumrice!=0)
+                if(numNumeric !=0)
                     m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                        m_data.get(j)) / numNumrice;
+                        m_data.get(j)) / Math.sqrt(numNumeric);
                 else
                     m_distance = m_EuclideanDistance.distance(m_data.get(i),
                             m_data.get(j));
@@ -240,11 +240,11 @@ public class RSFSAID implements FSAlgorithm {
      */
     private void initFeatureSelection(Instances data) throws Exception {
         m_data = data;
-        m_EuclideanDistance = new MyEuclideanDistance(data);
-        numNumrice = 0;
+        m_EuclideanDistance = new MyDistance1(data);
+        numNumeric = 0;
         for (int i = 0; i < m_data.numAttributes() - 1; i++) {
             if (m_data.attribute(i).type() == Attribute.NUMERIC) {
-                numNumrice++;
+                numNumeric++;
             }
         }
         computeClassSet();

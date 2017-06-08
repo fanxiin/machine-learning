@@ -15,11 +15,11 @@ import java.util.HashSet;
 /**
  * Created by xin on 2017/5/22.
  */
-public class RSFSAIDS implements FSAlgorithm{
+public class RSFSAID1 implements FSAlgorithm{
     /**
      * 领域粗糙集的距离阈值
      */
-    private double delta;
+    private double delta,deltaNom;
 
     /**
      * 属性重要度参数
@@ -68,7 +68,7 @@ public class RSFSAIDS implements FSAlgorithm{
 
     private String s_SelectedAttributes = "";
 
-    private MyDistance1 m_EuclideanDistance;
+    private MyDistance1 distance;
 
     /**
      * 特征选择算法构造函数
@@ -77,13 +77,14 @@ public class RSFSAIDS implements FSAlgorithm{
      * @param alpha
      * @param beta
      */
-    public RSFSAIDS(double delta, double alpha, double beta) {
+    public RSFSAID1(double delta,double deltaNom, double alpha, double beta) {
         this.delta = delta;
         this.alpha = alpha;
         this.beta = beta;
+        this.deltaNom = deltaNom;
     }
 
-    public RSFSAIDS(){}
+    public RSFSAID1(){}
 
     public int[] getSelectedAttributes() {
         return m_SelectedAttributes;
@@ -109,16 +110,13 @@ public class RSFSAIDS implements FSAlgorithm{
     private void findNeighborhoodSets() throws Exception {
         int dataCount = m_data.numInstances();
         neighborSets = new int[dataCount][dataCount];
-        double m_distance=0.0;
+
         for (int i = 0; i < dataCount; i++) {
             for (int j = i; j < dataCount; j++) {
-                if(numNumeric !=0)
-                    m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                            m_data.get(j)) / Math.sqrt(numNumeric);
-                else
-                    m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                            m_data.get(j));
-                if (m_distance <= delta) {
+
+                double[] m_distance = distance.multipleDistance(m_data.get(i),
+                        m_data.get(j));
+                if (m_distance[0] <= delta&& m_distance[1] <= deltaNom) {
                     neighborSets[i][j] = 1;
                     neighborSets[j][i] = 1;
                 }
@@ -151,7 +149,7 @@ public class RSFSAIDS implements FSAlgorithm{
         int[][] neighborSetsByAttr = new int[dataCount][dataCount];
         for (int i = 0; i < dataCount; i++) {
             for (int j = i; j < dataCount; j++) {
-                double m_distance = m_EuclideanDistance.distanceOnAttr(attrIndex, m_data.get(i),
+                double m_distance = distance.distanceOnAttr(attrIndex, m_data.get(i),
                         m_data.get(j));
                 if (m_distance <= delta) {
                     neighborSetsByAttr[i][j] = 1;
@@ -235,7 +233,7 @@ public class RSFSAIDS implements FSAlgorithm{
     }
 
     private boolean discernible(int attrIndex, int i, int j) {
-        return m_EuclideanDistance.distanceOnAttr(attrIndex, m_data.get(i), m_data.get(j)) > delta;
+        return distance.distanceOnAttr(attrIndex, m_data.get(i), m_data.get(j)) > delta;
     }
 
 
@@ -247,13 +245,13 @@ public class RSFSAIDS implements FSAlgorithm{
      */
     private void initFeatureSelection(Instances data) throws Exception {
         m_data = data;
-        m_EuclideanDistance = new MyDistance1(data);
-        numNumeric = 0;
-        for (int i = 0; i < m_data.numAttributes() - 1; i++) {
-            if (m_data.attribute(i).type() == Attribute.NUMERIC) {
-                numNumeric++;
-            }
-        }
+        distance = new MyDistance1(data);
+//        numNumeric = 0;
+//        for (int i = 0; i < m_data.numAttributes() - 1; i++) {
+//            if (m_data.attribute(i).type() == Attribute.NUMERIC) {
+//                numNumeric++;
+//            }
+//        }
         computeClassSet();
         findNeighborhoodSets();
     }

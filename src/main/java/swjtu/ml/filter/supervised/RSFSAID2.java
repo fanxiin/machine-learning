@@ -2,9 +2,8 @@ package swjtu.ml.filter.supervised;
 
 import swjtu.ml.filter.FSAlgorithm;
 import swjtu.ml.filter.FSException;
-import swjtu.ml.utils.MyDistance1;
+import swjtu.ml.utils.HVDM1;
 import swjtu.ml.utils.Tuple2;
-import weka.core.Attribute;
 import weka.core.Instances;
 
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ import java.util.HashSet;
 /**
  * Created by xin on 2017/5/22.
  */
-public class RSFSAIDS implements FSAlgorithm{
+public class RSFSAID2 implements FSAlgorithm{
     /**
      * 领域粗糙集的距离阈值
      */
@@ -31,7 +30,7 @@ public class RSFSAIDS implements FSAlgorithm{
      */
     private Instances m_data;
 
-    private int numNumeric;
+
 
     /**
      * 领域集合
@@ -68,7 +67,7 @@ public class RSFSAIDS implements FSAlgorithm{
 
     private String s_SelectedAttributes = "";
 
-    private MyDistance1 m_EuclideanDistance;
+    private HVDM1 m_EuclideanDistance;
 
     /**
      * 特征选择算法构造函数
@@ -77,13 +76,13 @@ public class RSFSAIDS implements FSAlgorithm{
      * @param alpha
      * @param beta
      */
-    public RSFSAIDS(double delta, double alpha, double beta) {
+    public RSFSAID2(double delta, double alpha, double beta) {
         this.delta = delta;
         this.alpha = alpha;
         this.beta = beta;
     }
 
-    public RSFSAIDS(){}
+    public RSFSAID2(){}
 
     public int[] getSelectedAttributes() {
         return m_SelectedAttributes;
@@ -112,11 +111,7 @@ public class RSFSAIDS implements FSAlgorithm{
         double m_distance=0.0;
         for (int i = 0; i < dataCount; i++) {
             for (int j = i; j < dataCount; j++) {
-                if(numNumeric !=0)
-                    m_distance = m_EuclideanDistance.distance(m_data.get(i),
-                            m_data.get(j)) / Math.sqrt(numNumeric);
-                else
-                    m_distance = m_EuclideanDistance.distance(m_data.get(i),
+                m_distance = m_EuclideanDistance.distance(m_data.get(i),
                             m_data.get(j));
                 if (m_distance <= delta) {
                     neighborSets[i][j] = 1;
@@ -185,6 +180,13 @@ public class RSFSAIDS implements FSAlgorithm{
          *  下边界元素数大于上边界元素数的领域的所有上边界元素的个数和 */
         int FN = 0;
 
+        int TP = 0;
+        int TN = 0;
+
+        int PP = 0;
+        int PN = 0;
+
+
         for (int i = 0; i < m_neighborSets.length; i++) {
             /** 第一个为实际正类数，第二个位实际负类数 *//** 对应正负类索引 */
             int[] posAndNeg = new int[2];
@@ -199,14 +201,30 @@ public class RSFSAIDS implements FSAlgorithm{
             /**************** 如果该领域内正负类个数相等？ *******************/
             /** 下边界大于上边界，故给单个对象分类时将其分入正类，则领域中实际为负类的对象分错
              *  即错正类 */
-            if (posAndNeg[posIndex] >= posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
-                FP++;
-            /** 上边界大于下边界 */
-            if (posAndNeg[negIndex]*beta > posAndNeg[posIndex] && instanceClass[i] == posIndex)
-                FN++;
+//            if (posAndNeg[posIndex] > posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
+//                FP++;
+//            if (posAndNeg[posIndex] > posAndNeg[negIndex]*beta && instanceClass[i] == posIndex)
+//                TP++;
+//            /** 上边界大于下边界 */
+//            if (posAndNeg[negIndex]*beta > posAndNeg[posIndex] && instanceClass[i] == posIndex)
+//                FN++;
+//            if (posAndNeg[negIndex]*beta > posAndNeg[posIndex] && instanceClass[i] == negIndex)
+//                TN++;
+
+//            if(posAndNeg[posIndex] > posAndNeg[negIndex]*beta){
+//                if(instanceClass[i] == posIndex) TP++;
+//                if(instanceClass[i] == negIndex) FP++;
+//            }
+
+            if (posAndNeg[posIndex] > posAndNeg[negIndex]*beta && instanceClass[i] == posIndex)
+                TP++;
+
+            if (posAndNeg[posIndex] <= posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
+                TN++;
         }
 
-        return 1 - (alpha * FP / nPos + (1-alpha) * FN / nNeg) / 2;
+//        return 1 - (alpha * TP / classCount[posIndex] + (1-alpha) * FP / classCount[negIndex]) / 2;
+        return  alpha * TP / classCount[posIndex] + (1-alpha) * TN / classCount[negIndex];
     }
 
 
@@ -247,13 +265,7 @@ public class RSFSAIDS implements FSAlgorithm{
      */
     private void initFeatureSelection(Instances data) throws Exception {
         m_data = data;
-        m_EuclideanDistance = new MyDistance1(data);
-        numNumeric = 0;
-        for (int i = 0; i < m_data.numAttributes() - 1; i++) {
-            if (m_data.attribute(i).type() == Attribute.NUMERIC) {
-                numNumeric++;
-            }
-        }
+        m_EuclideanDistance = new HVDM1(data);
         computeClassSet();
         findNeighborhoodSets();
     }

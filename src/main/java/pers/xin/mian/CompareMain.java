@@ -2,9 +2,6 @@ package pers.xin.mian;
 
 import pers.xin.Experiment.Experiment;
 import pers.xin.Experiment.FormatSummary;
-import pers.xin.optimization.PSO;
-import swjtu.ml.filter.supervised.FARNeM;
-import swjtu.ml.filter.supervised.RSFSAIDS;
 import swjtu.ml.filter.supervised.WAR;
 import weka.core.Instances;
 

@@ -1,8 +1,7 @@
 package pers.xin.test;
 
 import swjtu.ml.filter.FeatureSelection;
-import swjtu.ml.filter.supervised.FARNeM;
-import swjtu.ml.filter.supervised.RSFSAID;
+import swjtu.ml.filter.supervised.*;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -16,19 +15,18 @@ import java.util.Random;
  */
 public class AlgorithmTest {
     public static void main(String[] args) throws Exception {
-        File file = new File("/Users/xin/Desktop/ExperimentData/binaryARFF/tic-tac-toe.arff");
+        File file = new File("/Users/xin/Desktop/ExperimentData/test/ionosphere.arff");
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes() - 1);
 
-        FARNeM farNeM = new FARNeM(0.125);
-        RSFSAID rsfsaid = new RSFSAID(0.01,0.5,0.5);
+        RSFSAID4 rsfsaid = new RSFSAID4(0.37,0,0.52);
         FeatureSelection fs = new FeatureSelection(rsfsaid);
         fs.setInputFormat(instances);
         String result = fs.selectFeature(instances);
         System.out.println(result);
         Instances newIns = Filter.useFilter(instances,fs);
         Evaluation eval = new Evaluation(newIns);
-        eval.crossValidateModel(new weka.classifiers.functions.LibSVM(),instances,10,new Random(1));
-        System.out.println(eval.pctCorrect());
+        eval.crossValidateModel(new weka.classifiers.trees.J48(),newIns,5,new Random(1));
+        System.out.println(eval.areaUnderROC(0));
     }
 }
