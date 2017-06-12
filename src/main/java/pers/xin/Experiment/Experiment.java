@@ -12,6 +12,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -27,13 +28,11 @@ public class Experiment extends Optimizable{
     private HashMap<String,Double> featuresAUC=new HashMap<String, Double>();
     private HashMap<String,Double> paramsAUCBuffer = new HashMap<String, Double>();
     private HashMap<String,Integer> paramsFeatureCountBuffer = new HashMap<String, Integer>();
-    private FormatSummary summary;
     private int numFolds;
 
-    public Experiment(String classifierName, Instances data, int numFolds,FormatSummary summary){
+    public Experiment(String classifierName, Instances data, int numFolds){
         this.classifierName =classifierName;
         this.data=data;
-        this.summary = summary;
         this.numFolds = numFolds;
         int[] counts = new int[2];
         for (Instance datum : data) {
@@ -52,6 +51,10 @@ public class Experiment extends Optimizable{
 
     public String getClassifierName() {
         return classifierName;
+    }
+
+    public int getPositiveIndex() {
+        return positiveIndex;
     }
 
     /**
@@ -90,14 +93,15 @@ public class Experiment extends Optimizable{
             algorithm.setParams(params);
             FeatureSelection fs = new FeatureSelection(algorithm);
             fs.setInputFormat(data);
-            String features = fs.selectFeature(data);
+            int[] features = fs.selectFeature(data);
+            String s_features = Arrays.toString(features);
             paramsFeatureCountBuffer.put(paramsCode,algorithm.getSelectedAttributes().length);
             if(!featuresAUC.containsKey(features)){
                 Instances fs_data = Filter.useFilter(data,fs);
                 Classifier classifier = (Classifier) Class.forName(classifierName).newInstance();
-                featuresAUC.put(features,computeAUC(fs_data,classifier));
+                featuresAUC.put(s_features,computeAUC(fs_data,classifier));
             }
-            paramsAUCBuffer.put(paramsCode,featuresAUC.get(features));
+            paramsAUCBuffer.put(paramsCode,featuresAUC.get(s_features));
         }
         double AUC = paramsAUCBuffer.get(paramsCode);
 //        int featureCount = paramsFeatureCountBuffer.get(paramsCode);
@@ -133,11 +137,11 @@ public class Experiment extends Optimizable{
      * @return
      * @throws Exception
      */
-    public String originalAnalyze() throws Exception {
+    public Summary originalAnalyze() throws Exception {
         Evaluation eval = new Evaluation(data);
         Classifier classifier = (Classifier) Class.forName(classifierName).newInstance();
         eval.crossValidateModel(classifier,data,numFolds,new Random(1));
-        return summary.format(eval,positiveIndex);
+        return new Summary(eval,positiveIndex);
     }
 
     /**
@@ -146,17 +150,17 @@ public class Experiment extends Optimizable{
      * @return
      * @throws Exception
      */
-    public String FSAnalyze(double[] params) throws Exception {
+    public Summary FSAnalyze(double[] params) throws Exception {
         FSAlgorithm algorithm = (FSAlgorithm) Class.forName(FSAlgorithmName).newInstance();
         algorithm.setParams(params);
         FeatureSelection fs = new FeatureSelection(algorithm);
         fs.setInputFormat(data);
-        String reduction = fs.selectFeature(data);
+        int[] reduction = fs.selectFeature(data);
         Instances fs_data = Filter.useFilter(data,fs);
         Evaluation eval = new Evaluation(fs_data);
         Classifier classifier = (Classifier) Class.forName(classifierName).newInstance();
         eval.crossValidateModel(classifier,fs_data,numFolds,new Random(1));
-        return summary.format(params, reduction, eval, positiveIndex);
+        return new Summary(eval,positiveIndex,params,reduction);
     }
 
     /**

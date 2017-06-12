@@ -14,8 +14,6 @@ public interface FSAlgorithm {
      */
     int[] SelectAttributes(Instances data) throws Exception;
 
-    String getSelectedAttributesString();
-
     int[] getSelectedAttributes();
 
     void setParams(double[] params);

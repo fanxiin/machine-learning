@@ -40,8 +40,6 @@ public class WAR implements FSAlgorithm{
      */
     private int[] m_SelectedAttributes;
 
-    private String s_SelectedAttributes = "";
-
     private MyDistance1 m_EuclideanDistance;
 
     public WAR(double sigma){
@@ -104,12 +102,7 @@ public class WAR implements FSAlgorithm{
         for (int col = 0; col < selectedAttributes.size(); col++) {
             m_SelectedAttributes[col] = selectedAttributes.get(col);
         }
-        s_SelectedAttributes = selectedAttributes.toString();
         return m_SelectedAttributes;
-    }
-
-    public String getSelectedAttributesString() {
-        return this.s_SelectedAttributes;
     }
 
     public int[] getSelectedAttributes() {

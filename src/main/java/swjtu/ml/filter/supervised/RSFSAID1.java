@@ -66,8 +66,6 @@ public class RSFSAID1 implements FSAlgorithm{
      */
     private int[] m_SelectedAttributes;
 
-    private String s_SelectedAttributes = "";
-
     private MyDistance1 distance;
 
     /**
@@ -94,10 +92,6 @@ public class RSFSAID1 implements FSAlgorithm{
         this.delta = params[0];
         this.alpha = params[1];
         this.beta = params[2];
-    }
-
-    public String getSelectedAttributesString() {
-        return s_SelectedAttributes;
     }
 
     public int getSelectedAttributeCount(){
@@ -197,10 +191,10 @@ public class RSFSAID1 implements FSAlgorithm{
             /**************** 如果该领域内正负类个数相等？ *******************/
             /** 下边界大于上边界，故给单个对象分类时将其分入正类，则领域中实际为负类的对象分错
              *  即错正类 */
-            if (posAndNeg[posIndex] >= posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
+            if (posAndNeg[posIndex] > posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
                 FP++;
             /** 上边界大于下边界 */
-            if (posAndNeg[negIndex]*beta > posAndNeg[posIndex] && instanceClass[i] == posIndex)
+            if (posAndNeg[negIndex]*beta >= posAndNeg[posIndex] && instanceClass[i] == posIndex)
                 FN++;
         }
 
@@ -328,7 +322,6 @@ public class RSFSAID1 implements FSAlgorithm{
         for (int col = 0; col < selectedAttributes.size(); col++) {
             m_SelectedAttributes[col] = selectedAttributes.get(col);
         }
-        s_SelectedAttributes = selectedAttributes.toString();
         return m_SelectedAttributes;
     }
 

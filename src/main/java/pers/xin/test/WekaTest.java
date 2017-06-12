@@ -62,20 +62,20 @@ public class WekaTest {
 //        discretize.setInputFormat(instances);
 //        instances = Filter.useFilter(instances,discretize);
         try {
-            String r = fs.selectFeature(instances);
-            System.out.println(r);
+//            String r = fs.selectFeature(instances);
+//            System.out.println(r);
             Instances newInstances = Filter.useFilter(instances,fs);
             wt.addPlot(new J48(), newInstances,"RSFSAID");
 
 
 
-            r = fs1.selectFeature(instances);
-            System.out.println(r);
+//            r = fs1.selectFeature(instances);
+//            System.out.println(r);
             Instances newInstances1 = Filter.useFilter(instances,fs1);
             wt.addPlot(new J48(), newInstances1,"WAR");
 
-            r = fs2.selectFeature(instances);
-            System.out.println(r);
+//            r = fs2.selectFeature(instances);
+//            System.out.println(r);
             Instances newInstances2 = Filter.useFilter(instances,fs2);
             wt.addPlot(new J48(), newInstances2,"FARNeM");
 

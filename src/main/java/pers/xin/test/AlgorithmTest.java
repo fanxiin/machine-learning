@@ -8,6 +8,8 @@ import weka.filters.Filter;
 
 import java.io.File;
 import java.io.FileReader;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -19,11 +21,11 @@ public class AlgorithmTest {
         Instances instances = new Instances(new FileReader(file));
         instances.setClassIndex(instances.numAttributes() - 1);
 
-        RSFSAID4 rsfsaid = new RSFSAID4(0.37,0,0.52);
+        RSFSAID2 rsfsaid = new RSFSAID2(0.37,0,0.52);
         FeatureSelection fs = new FeatureSelection(rsfsaid);
         fs.setInputFormat(instances);
-        String result = fs.selectFeature(instances);
-        System.out.println(result);
+        int[] result = fs.selectFeature(instances);
+        System.out.println(Arrays.toString(result));
         Instances newIns = Filter.useFilter(instances,fs);
         Evaluation eval = new Evaluation(newIns);
         eval.crossValidateModel(new weka.classifiers.trees.J48(),newIns,5,new Random(1));

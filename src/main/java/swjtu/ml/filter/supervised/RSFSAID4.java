@@ -65,8 +65,6 @@ public class RSFSAID4 implements FSAlgorithm{
      */
     private int[] m_SelectedAttributes;
 
-    private String s_SelectedAttributes = "";
-
     private HVDM1 m_EuclideanDistance;
 
     /**
@@ -92,10 +90,6 @@ public class RSFSAID4 implements FSAlgorithm{
         this.delta = params[0];
         this.alpha = params[1];
         this.beta = params[2];
-    }
-
-    public String getSelectedAttributesString() {
-        return s_SelectedAttributes;
     }
 
     public int getSelectedAttributeCount(){
@@ -211,14 +205,16 @@ public class RSFSAID4 implements FSAlgorithm{
 //            if (posAndNeg[negIndex]*beta > posAndNeg[posIndex] && instanceClass[i] == negIndex)
 //                TN++;
 
-            if(posAndNeg[posIndex] > posAndNeg[negIndex]*beta){
-                if(instanceClass[i] == posIndex) TP++;
-                if(instanceClass[i] == negIndex) FP++;
-            }
-
+//            if(posAndNeg[posIndex] > posAndNeg[negIndex]*beta){
+//                if(instanceClass[i] == posIndex) TP++;
+//                if(instanceClass[i] == negIndex) FP++;
+//            }
+            if (posAndNeg[posIndex] <= posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
+                TN++;
         }
 
-        return 1 - FP*1.0 / classCount[negIndex];
+       // return 1 - FP*1.0 / classCount[negIndex];
+        return TN*1.0 / classCount[negIndex];
     }
 
 
@@ -336,7 +332,6 @@ public class RSFSAID4 implements FSAlgorithm{
         for (int col = 0; col < selectedAttributes.size(); col++) {
             m_SelectedAttributes[col] = selectedAttributes.get(col);
         }
-        s_SelectedAttributes = selectedAttributes.toString();
         return m_SelectedAttributes;
     }
 

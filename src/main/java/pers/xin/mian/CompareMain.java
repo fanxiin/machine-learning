@@ -2,6 +2,7 @@ package pers.xin.mian;
 
 import pers.xin.Experiment.Experiment;
 import pers.xin.Experiment.FormatSummary;
+import pers.xin.Experiment.Summary;
 import swjtu.ml.filter.supervised.WAR;
 import weka.core.Instances;
 
@@ -25,17 +26,17 @@ public class CompareMain {
                 ,weka.classifiers.functions.LibSVM.class.getName()};
 
         File[] files = folder.listFiles();
-        FormatSummary summary = new FormatSummary("",1);
+        FormatSummary.setParamNames(new String[]{"delta","alpha","beta"});
         for (String classifierName : clssifiers) {
             m.resultPrintln(classifierName);
-            m.resultPrintln(summary.header());
+            m.resultPrintln(FormatSummary.header());
             for (File file : files) {
                 if(!file.getName().startsWith(".")){
                     System.out.println("-------- 处理数据集: "+file.getName() +" ---------");
                     try{
                         Instances instances = new Instances(new FileReader(file));
                         instances.setClassIndex(instances.numAttributes()-1);
-                        Experiment e = new Experiment(classifierName,instances,5,summary);
+                        Experiment e = new Experiment(classifierName,instances,5);
                         double[] param = new double[1];
 //                        e.setFSAlgorithmName(FARNeM.class.getName());
 //                        m.resultPrintln(e.originalAnalyze());
@@ -44,16 +45,23 @@ public class CompareMain {
 //                        m.resultPrintln(e.FSAnalyze(param));
 //                        param[0] = 0.25;
 //                        m.resultPrintln(e.FSAnalyze(param));
+                        Summary summary;
+                        summary = e.originalAnalyze();
+                        m.resultPrintln(FormatSummary.format(summary));
 
                         e.setFSAlgorithmName(WAR.class.getName());
                         param[0] = 0.1;
-                        m.resultPrintln(e.FSAnalyze(param));
+                        summary = e.FSAnalyze(param);
+                        m.resultPrintln(FormatSummary.format(summary));
                         param[0] = 0.05;
-                        m.resultPrintln(e.FSAnalyze(param));
+                        summary = e.FSAnalyze(param);
+                        m.resultPrintln(FormatSummary.format(summary));
                         param[0] = 0.01;
-                        m.resultPrintln(e.FSAnalyze(param));
+                        summary = e.FSAnalyze(param);
+                        m.resultPrintln(FormatSummary.format(summary));
                         param[0] = 0;
-                        m.resultPrintln(e.FSAnalyze(param));
+                        summary = e.FSAnalyze(param);
+                        m.resultPrintln(FormatSummary.format(summary));
                         m.resultPrintln("");
                     }catch (Exception e){
                         e.printStackTrace();

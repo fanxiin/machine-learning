@@ -6,114 +6,72 @@ import weka.classifiers.Evaluation;
  * Created by xin on 2017/4/25.
  */
 public class FormatSummary {
-    private double[] params;
-    /**
-     * Correctly Classified Instances Percentage
-     */
-    private double CCIP;
-    /**
-     * Incorrectly Classified Instances
-     */
-    private int Incorrectly_Classified_Instances;
-    /**
-     * Correctly_Classified_Instances
-     */
-    private int Correctly_Classified_Instances;
-    /**
-     * Incorrectly Classified Instances Percentage
-     */
-    private double ICIP;
-    private double F_Measure, ROC_Area;
-    private String reduction;
-    private int reductionCount;
-    private String dataSetName;
-    private boolean isReduced;
-    private int numAttribute;
-    private String nullSymbol = "";
-    private int paramCount=0;
 
-    /**
-     *
-     * @param nullSymbol
-     * @param paramCount
-     */
-    public FormatSummary(String nullSymbol, int paramCount){
-        this.nullSymbol = nullSymbol;
-        this.paramCount=paramCount;
+    public static String[] paramNames;
+
+    public static void setParamNames(String[] paramNames) {
+        FormatSummary.paramNames = paramNames;
     }
 
-    public void setSummary(Evaluation eval, int positiveIndex) {
-        this.Correctly_Classified_Instances = (int) eval.correct();
-        this.Incorrectly_Classified_Instances = (int) eval.incorrect();
-        this.CCIP = Correctly_Classified_Instances * 100.0 / (Correctly_Classified_Instances
-                + Incorrectly_Classified_Instances);
-        this.ICIP = Incorrectly_Classified_Instances * 100.0 / (Correctly_Classified_Instances
-                + Incorrectly_Classified_Instances);
-        this.F_Measure = eval.fMeasure(positiveIndex);
-        this.ROC_Area = eval.areaUnderROC(positiveIndex);
-        this.dataSetName = eval.getHeader().relationName();
-        this.isReduced = false;
-        this.numAttribute = eval.getHeader().numAttributes();
+    public static String format(Evaluation eval, int positiveIndex) {
+        String result = (int) eval.correct()+ ","+
+                eval.pctCorrect()+ ","+
+                (int) eval.numTruePositives(positiveIndex)+ ","+
+                eval.truePositiveRate(positiveIndex)*100+ ","+
+                (int) eval.numTrueNegatives(positiveIndex)+ ","+
+                eval.trueNegativeRate(positiveIndex)*100+ ","+
+                eval.fMeasure(positiveIndex)+","+
+                eval.areaUnderROC(positiveIndex)+","+
+                eval.getHeader().numAttributes();
+        return result;
     }
 
-    public void setSummary(double[] params, String reduction, Evaluation eval, int positiveIndex) {
-        setSummary(eval, positiveIndex);
-        this.params = params;
-        this.reduction = reduction;
-        this.isReduced = true;
-        this.reductionCount = reduction.split(",").length;
+    public static String formatHeader(){
+        return "correctly classified instances,correctly classified instances %," +
+                "correctly classified positives,true positive rate %," +
+                "correctly classified negatives,true positive rate %," +
+                "F-Measure,AUC," +
+                "(Reduction) Attribute Count";
     }
 
-    public double getROC_Area() {
-        return ROC_Area;
-    }
-
-    public String getReduction() {
-        return reduction;
-    }
-
-    public String header() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DataSet Name,");
-        for (int i = 0; i < paramCount; i++) {
-            sb.append("parma"+(i+1)+",");
-        }
-        sb.append("Correctly Classified Instances,Correctly Classified Instances%," +
-                "Incorrectly Classified Instances,Incorrectly Classified Instances%,F-Measure,AUC," +
-                        "(Reduction) Attribute Count,Reduction");
-        return sb.toString();
-    }
-
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        if (isReduced) {
-            sb.append(dataSetName + ",");
-            for (int i = 0; i < paramCount; i++) {
-                sb.append(params[i]+",");
+    public static String header(){
+        String s_params = "";
+        if(paramNames!=null){
+            s_params = paramNames[0];
+            for (int i = 1; i < paramNames.length; i++) {
+                s_params = s_params +","+ paramNames[i];
             }
-            sb.append(Correctly_Classified_Instances + "," + CCIP + "%,"
-                    + Incorrectly_Classified_Instances + "," + ICIP + "%,"
-                    + F_Measure + "," + ROC_Area + "," + reductionCount + "," + reduction.replaceAll(",",""));
-            return sb.toString();
-        } else {
-            sb.append(dataSetName + ",");
-            for (int i = 0; i < paramCount; i++) {
-                sb.append(nullSymbol+",");
-            }
-            sb.append(Correctly_Classified_Instances + "," + CCIP + "%,"
-                    + Incorrectly_Classified_Instances + "," + ICIP + "%,"
-                    + F_Measure + "," + ROC_Area + "," + numAttribute);
-            return sb.toString();
         }
+        return "data set,"+s_params+","+formatHeader();
     }
 
-    public String format(Evaluation eval, int positiveIndex) {
-        setSummary(eval,positiveIndex);
-        return toString();
-    }
-
-    public String format(double[] params, String reduction, Evaluation eval, int positiveIndex) {
-        setSummary(params,reduction,eval,positiveIndex);
-        return toString();
+    public static String format(Summary summary){
+        Evaluation eval = summary.getEval();
+        if(summary.isReducted()){
+            double[] params = summary.getParams();
+            String s_params = ""+params[0];
+            for (int i = 1; i < params.length; i++) {
+                s_params = s_params + ","+params[i];
+            }
+            int[] reduction = summary.getReduction();
+            String s_reduction = "" + (reduction[0]+1);
+            for (int i = 1; i < reduction.length-1; i++) {
+                s_reduction = s_reduction +" "+ (reduction[i]+1);
+            }
+            return eval.getHeader().relationName()+","+
+                    s_params+","+
+                    format(eval,summary.getPositiveIndex())+","+
+                    s_reduction;
+        }else {
+            String s_params = "";
+            if(paramNames!=null){
+                for (int i = 1; i < paramNames.length; i++) {
+                    s_params = s_params +",";
+                }
+            }
+            return eval.getHeader().relationName()+","+
+                    s_params+","+
+                    format(eval,summary.getPositiveIndex());
+        }
     }
 }

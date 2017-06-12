@@ -155,12 +155,12 @@ public class FeatureSelection extends Filter implements SupervisedFilter,
     }
 
     /**
-     * 以字符串的方式返回训练结果
+     * 以返回训练结果
      * @param data
      * @return
      * @throws Exception
      */
-    public String selectFeature(Instances data) throws Exception{
+    public int[] selectFeature(Instances data) throws Exception{
         for (int i = 0; i < data.numInstances(); i++) {
             this.input(data.instance(i));
         }
@@ -178,7 +178,7 @@ public class FeatureSelection extends Filter implements SupervisedFilter,
             flushInput();
         }
         m_NewBatch = true;
-        return m_FSAlgorithm.getSelectedAttributesString();
+        return m_SelectedAttributes;
     }
 
 

@@ -67,8 +67,6 @@ public class RSFSAID3 implements FSAlgorithm{
      */
     private int[] m_SelectedAttributes;
 
-    private String s_SelectedAttributes = "";
-
     private HVDM1 m_EuclideanDistance;
 
     /**
@@ -94,10 +92,6 @@ public class RSFSAID3 implements FSAlgorithm{
         this.delta = params[0];
         this.alpha = params[1];
         this.beta = params[2];
-    }
-
-    public String getSelectedAttributesString() {
-        return s_SelectedAttributes;
     }
 
     public int getSelectedAttributeCount(){
@@ -182,6 +176,9 @@ public class RSFSAID3 implements FSAlgorithm{
          *  下边界元素数大于上边界元素数的领域的所有上边界元素的个数和 */
         int FN = 0;
 
+        int TP = 0;
+        int TN = 0;
+
         for (int i = 0; i < m_neighborSets.length; i++) {
             /** 第一个为实际正类数，第二个位实际负类数 *//** 对应正负类索引 */
             int[] posAndNeg = new int[2];
@@ -196,15 +193,15 @@ public class RSFSAID3 implements FSAlgorithm{
             /**************** 如果该领域内正负类个数相等？ *******************/
             /** 下边界大于上边界，故给单个对象分类时将其分入正类，则领域中实际为负类的对象分错
              *  即错正类 */
-            if (posAndNeg[posIndex] > posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
-                FP++;
-            /** 上边界大于下边界 */
-            if (posAndNeg[negIndex]*beta > posAndNeg[posIndex] && instanceClass[i] == posIndex)
-                FN++;
+            if (posAndNeg[posIndex] > posAndNeg[negIndex]*beta && instanceClass[i] == posIndex)
+                TP++;
+
+            if (posAndNeg[posIndex] <= posAndNeg[negIndex]*beta && instanceClass[i] == negIndex)
+                TN++;
         }
 
-        //return 1 - (alpha * FP / nPos + (1-alpha) * FN / nNeg) / 2;
-        return 1 - (alpha * FP + (1-alpha) * FN ) / numInstances;
+//        return 1 - (alpha * TP / classCount[posIndex] + (1-alpha) * FP / classCount[negIndex]) / 2;
+        return TP*1.0 /classCount[posIndex]  + TN*1.0 / classCount[negIndex];
     }
 
 
@@ -323,7 +320,6 @@ public class RSFSAID3 implements FSAlgorithm{
         for (int col = 0; col < selectedAttributes.size(); col++) {
             m_SelectedAttributes[col] = selectedAttributes.get(col);
         }
-        s_SelectedAttributes = selectedAttributes.toString();
         return m_SelectedAttributes;
     }
 

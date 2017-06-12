@@ -65,8 +65,6 @@ public class RSFSAID2 implements FSAlgorithm{
      */
     private int[] m_SelectedAttributes;
 
-    private String s_SelectedAttributes = "";
-
     private HVDM1 m_EuclideanDistance;
 
     /**
@@ -92,10 +90,6 @@ public class RSFSAID2 implements FSAlgorithm{
         this.delta = params[0];
         this.alpha = params[1];
         this.beta = params[2];
-    }
-
-    public String getSelectedAttributesString() {
-        return s_SelectedAttributes;
     }
 
     public int getSelectedAttributeCount(){
@@ -342,7 +336,6 @@ public class RSFSAID2 implements FSAlgorithm{
         for (int col = 0; col < selectedAttributes.size(); col++) {
             m_SelectedAttributes[col] = selectedAttributes.get(col);
         }
-        s_SelectedAttributes = selectedAttributes.toString();
         return m_SelectedAttributes;
     }
 

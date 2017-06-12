@@ -1,7 +1,8 @@
 package pers.xin.optimization;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Random;
@@ -11,8 +12,8 @@ import java.util.Random;
  */
 public class PSO {
 
-    private Logger logger = Logger.getLogger("detail");
-    private static Logger m_logger=Logger.getLogger("matlab");
+    private Logger logger;
+    private Logger m_logger;
 
     /**
      * 优化参数个数
@@ -85,6 +86,11 @@ public class PSO {
             vMax[i][1]= (intervals[i][1]-intervals[i][0])*velocityRatio;
             vMax[i][0]= -vMax[i][1];
         }
+    }
+
+    public void setLogger(Logger logger, Logger m_logger) throws IOException {
+        this.logger = logger;
+        this.m_logger = m_logger;
     }
 
     /**

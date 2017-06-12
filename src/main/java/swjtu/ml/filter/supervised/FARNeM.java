@@ -91,10 +91,6 @@ public class FARNeM implements FSAlgorithm {
         return m_SelectedAttributes;
     }
 
-    public String getSelectedAttributesString() {
-        return s_SelectedAttributes;
-    }
-
     public int getSelectedAttributeCount() {
         return m_SelectedAttributes.length;
     }
