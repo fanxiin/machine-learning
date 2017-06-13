@@ -11,10 +11,10 @@ import java.util.Random;
 /**
  * Created by xin on 2017/4/18.
  */
-public class PSO {
+public class CFPSO {
 
-    private Logger logger = Logger.getLogger("pso");
-    private Logger m_logger= Logger.getLogger("pso_matlab");
+    private Logger logger = Logger.getLogger("CFPSO");
+    private Logger m_logger= Logger.getLogger("CFPSO_matlab");
 
     /**
      * 优化参数个数
@@ -34,7 +34,7 @@ public class PSO {
     /**
      * 惯性权重
      */
-    private double w;
+    private double w,wMax,wMin;
 
     /**
      * 学习因子
@@ -100,19 +100,21 @@ public class PSO {
      * @param maxIteration 最大迭代次数
      * @param velocityRatio 最大速度与搜索区间的比值
      * @param threshold 停止阈值
-     * @param w 惯性权重
+     * @param wMax 惯性权重最大值
+     * @param wMin 惯性权重最小值
      * @param c1 自我认知系数
      * @param c2 社会认知系数
      */
-    public PSO(int swarmSize, int maxIteration, double velocityRatio, double threshold, double w,
-               double c1, double
-            c2) {
+    public CFPSO(int swarmSize, int maxIteration, double velocityRatio, double threshold, double wMax,
+                 double wMin, double c1, double
+                         c2) {
         this.swarmSize = swarmSize;
         this.maxIteration = maxIteration;
-
+        this.wMax = wMax;
+        this.wMin = wMin;
         this.velocityRatio = velocityRatio;
         this.threshold = threshold;
-        this.w = w;
+        this.w = wMax;
         this.c1 = c1;
         this.c2 = c2;
     }
@@ -272,6 +274,8 @@ public class PSO {
         for (int i = 0; i < maxIteration; i++) {
             logger.info("--------------------iterate "+i);
             System.out.print(".");
+            w = wMax - (wMax-wMin)*i/maxIteration;
+
             /** 此轮迭代所有粒子的最优点 */
             double[] m_gBestPosition = gBestPosition.clone();
             /** 此轮迭代群体最佳适应度值 */
@@ -312,5 +316,3 @@ public class PSO {
     }
 
 }
-
-

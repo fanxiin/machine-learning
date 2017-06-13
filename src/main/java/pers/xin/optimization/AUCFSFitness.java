@@ -3,7 +3,7 @@ package pers.xin.optimization;
 /**
  * Created by xin on 2017/4/27.
  */
-public class AUCFSFitness extends Fitness{
+public class AUCFSFitness extends BaseFitness{
     private int featureCount;
 
     public AUCFSFitness(double AUC, int featureCount){
@@ -23,5 +23,9 @@ public class AUCFSFitness extends Fitness{
         // return false;
         if(this.m_fitness <f.m_fitness)return false;
         return true;
+    }
+
+    public AUCFSFitness copy(){
+        return new AUCFSFitness(this.m_fitness,this.featureCount);
     }
 }

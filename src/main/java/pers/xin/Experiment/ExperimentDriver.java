@@ -23,6 +23,7 @@ public class ExperimentDriver {
     private int maxIterate;
     private int swarmSize;
     private int psoTimes;
+    private double w;
     private String m_FSALgorithm;
     private String[] classifiers;
     private double[][] interval;
@@ -30,9 +31,17 @@ public class ExperimentDriver {
     private String dataFilePath;
     private String m_outputPath;
 
-    public void setPSO(int swarmSize,int maxIterate, int psoTimes) {
+    /**
+     *
+     * @param swarmSize 种群大小
+     * @param maxIterate 最大迭代次数
+     * @param inertialWeight 惯性权重
+     * @param psoTimes 粒子群运行搜索次数
+     */
+    public void setPSO(int swarmSize,int maxIterate, double inertialWeight, int psoTimes) {
         this.maxIterate = maxIterate;
         this.swarmSize = swarmSize;
+        this.w = inertialWeight;
         this.psoTimes = psoTimes;
     }
 
@@ -122,7 +131,7 @@ public class ExperimentDriver {
                         Summary originalSummary = experiment.originalAnalyze();
                         resultPrintln(FormatSummary.format(originalSummary));
                         //logger.info("-------- origin AUC"+summary.getROC_Area()+" ---------");
-                        PSO pso = new PSO(swarmSize,maxIterate,1,0.00001,0.5,2,2);
+                        PSO pso = new PSO(swarmSize,maxIterate,1,0.00001,w,2,2);
                         pso.setObject(experiment);
                         pso.setLogger(logger,m_logger);
                         for (int i = 0; i < psoTimes; i++) {
