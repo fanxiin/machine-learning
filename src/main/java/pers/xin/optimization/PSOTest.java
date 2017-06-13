@@ -1,8 +1,5 @@
 package pers.xin.optimization;
 
-import weka.core.pmml.Array;
-
-import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -28,7 +25,7 @@ public class PSOTest extends Optimizable{
     }
 
     public static void main(String[] args) {
-        PSO pso = new PSO(20,40,0.8,0.0001,0.5,2,2);
+        BPSO pso = new BPSO(20,40,0.8,0.0001,0.5,2,2);
         pso.setObject(new PSOTest());
         double[] best = pso.search();
         System.out.println(best[0]+" ,"+best[1]+", "+best[2]);

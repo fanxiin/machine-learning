@@ -1,7 +1,8 @@
 package pers.xin.Experiment;
 
 import org.apache.log4j.*;
-import pers.xin.mian.Main;
+import pers.xin.optimization.BPSO;
+import pers.xin.optimization.CFPSO;
 import pers.xin.optimization.PSO;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -11,7 +12,6 @@ import weka.filters.supervised.instance.SMOTE;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -113,9 +113,10 @@ public class ExperimentDriver {
         m_logger.info(ss.toString());
         logger.info(ss.toString());
 
+        resultPrintln(FormatSummary.header());
         for (String classifierName : classifiers) {
+            resultPrintln("");
             resultPrintln(classifierName);
-            resultPrintln(FormatSummary.header());
             for (File file : files) {
                 if(!file.getName().startsWith(".")){
                     System.out.println("-------- 处理数据集: "+file.getName() +" ---------");
@@ -131,7 +132,10 @@ public class ExperimentDriver {
                         Summary originalSummary = experiment.originalAnalyze();
                         resultPrintln(FormatSummary.format(originalSummary));
                         //logger.info("-------- origin AUC"+summary.getROC_Area()+" ---------");
-                        PSO pso = new PSO(swarmSize,maxIterate,1,0.00001,w,2,2);
+
+//                        PSO pso = new BPSO(swarmSize,maxIterate,1,0.00001,w,2,2);
+
+                        PSO pso = new CFPSO(swarmSize,maxIterate,1,0.00001,0.4,0.9,2,2);
                         pso.setObject(experiment);
                         pso.setLogger(logger,m_logger);
                         for (int i = 0; i < psoTimes; i++) {

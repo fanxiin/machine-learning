@@ -22,14 +22,14 @@ public class FormatSummary {
                 eval.trueNegativeRate(positiveIndex)*100+ ","+
                 eval.fMeasure(positiveIndex)+","+
                 eval.areaUnderROC(positiveIndex)+","+
-                eval.getHeader().numAttributes();
+                (eval.getHeader().numAttributes()-1);
         return result;
     }
 
     public static String formatHeader(){
         return "correctly classified instances,correctly classified instances %," +
                 "correctly classified positives,true positive rate %," +
-                "correctly classified negatives,true positive rate %," +
+                "correctly classified negatives,true negative rate %," +
                 "F-Measure,AUC," +
                 "(Reduction) Attribute Count";
     }
